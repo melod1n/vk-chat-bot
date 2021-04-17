@@ -1,0 +1,14 @@
+{
+  "name": "vk-ts-bot",
+  "version": "1.0.0",
+  "dependencies": {
+    "@types/node": "^14.14.31",
+    "@types/sqlite3": "^3.1.7",
+    "sqlite3": "^5.0.2",
+    "systeminformation": "^5.6.1",
+    "vk-io": "^4.1.4"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}
