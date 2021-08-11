@@ -1,6 +1,5 @@
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
-import * as dotenv from 'dotenv';
 import {database} from './database/database';
 import {Command} from './model/chat-command';
 import {inviteAnswers, kickAnswers, settings, SettingsStorage} from './database/settings-storage';
@@ -30,10 +29,8 @@ import {Chat} from './model/chat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
 
-dotenv.config();
-
-export const creatorId = parseInt(process.env.CREATOR_ID);
-export const isDebug = process.env.IS_DEBUG === 'true';
+export const creatorId = yourIdHere
+export const isDebug = true;
 export let currentGroupId: number = -1;
 
 export let currentSentMessages: number = 0;
@@ -54,7 +51,7 @@ setup();
 let startMessage = !isDebug;
 
 export let vk = new VK({
-    token: process.env.TOKEN
+    token: tokenHere
 });
 
 globalThis.vk = vk;
