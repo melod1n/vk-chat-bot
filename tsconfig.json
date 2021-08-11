@@ -4,8 +4,17 @@
     "module": "commonjs",
     "sourceMap": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": []
   },
+  "include": [
+    "src/*",
+    "data/*"
+  ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./node_modules/@types/node/index.d.ts",
   ]
 }
