@@ -10,18 +10,20 @@ export class SystemSpecs extends Command {
     async execute(context) {
         let text = '';
 
-        SystemInformation.osInfo().then(async (os) => {
-            text += `OS: ${os.distro}\n`;
-            SystemInformation.cpu().then(async (cpu) => {
-                text += `CPU: ${cpu.manufacturer} ${cpu.brand} ${cpu.physicalCores} cores ${cpu.cores} threads\n`;
+        await Api.sendMessage(context, 'Retrieving data...').then(async () => {
+            SystemInformation.osInfo().then(async (os) => {
+                text += `OS: ${os.distro}\n`;
+                SystemInformation.cpu().then(async (cpu) => {
+                    text += `CPU: ${cpu.manufacturer} ${cpu.brand} ${cpu.physicalCores} cores ${cpu.cores} threads\n`;
 
-                SystemInformation.mem().then(async (memory) => {
-                    const totalRam = Math.round(memory.total / Math.pow(2, 30));
-                    text += `RAM: ${totalRam} GB\n`;
+                    SystemInformation.mem().then(async (memory) => {
+                        const totalRam = memory.total / Math.pow(2, 30);
+                        text += `RAM: ${totalRam} GB\n`;
 
-                    await Api.sendMessage(context, text);
+                        await Api.sendMessage(context, text);
+                    });
                 });
             });
-        });
+        })
     }
 }

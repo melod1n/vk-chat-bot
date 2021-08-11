@@ -4,15 +4,13 @@
   "dependencies": {
     "@types/node": "^14.14.31",
     "@types/sqlite3": "^3.1.7",
+    "dotenv": "^10.0.0",
     "sqlite3": "^5.0.2",
     "systeminformation": "^5.6.1",
-    "vk-io": "^4.1.4"
-  },
-  "devDependencies": {
-    "dotenv": "^8.2.0"
+    "vk-io": "^4.3.2"
   },
   "description": "Simple chat bot for VK",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

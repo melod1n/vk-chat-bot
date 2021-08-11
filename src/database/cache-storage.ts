@@ -59,7 +59,7 @@ export class CacheStorage {
     }
 
     static async storeUser(user: User): Promise<any> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             db.serialize(() => {
                 db.run('insert into users values (?, ?, ?, ?, ?)',
                     [user.userId, user.firstName, user.lastName, user.isClosed, user.photo200],
@@ -72,7 +72,7 @@ export class CacheStorage {
     }
 
     static async storeChat(chat: Chat): Promise<any> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             db.serialize(() => {
                 db.run('insert into chats values (?, ?, ?, ?, ?, ?, ?, ?)',
                     [chat.peerId, chat.type, chat.localId, chat.title, chat.isAllowed, chat.membersCount, chat.getAdminIds(), chat.getUsers()],
@@ -109,7 +109,7 @@ export class CacheStorage {
                     else resolve(this.fillUser(row));
                 }, (error) => {
                     if (error) reject(error);
-                    else resolve();
+                    else resolve(null);
                 });
             });
         });
@@ -123,7 +123,7 @@ export class CacheStorage {
                     else resolve(this.fillChat(row));
                 }, (error) => {
                     if (error) reject(error);
-                    else resolve();
+                    else resolve(null);
                 });
             });
         });
@@ -150,16 +150,19 @@ export class CacheStorage {
         chat.type = row.type;
         chat.title = row.title;
 
-        const splitUsers: string[] = row.users.split(',');
-        const splitAdmins: string[] = row.adminIds.split(',');
+        if (row.users) {
+            const splitUsers: string[] = row.users.split(',');
+            splitUsers.forEach(userId => {
+                chat.users.push(parseInt(userId));
+            });
+        }
 
-        splitUsers.forEach(userId => {
-            chat.users.push(parseInt(userId));
-        });
-
-        splitAdmins.forEach(adminId => {
-            chat.admins.push(parseInt(adminId));
-        });
+        if (row.admins) {
+            const splitAdmins: string[] = row.admins.split(',');
+            splitAdmins.forEach(adminId => {
+                chat.admins.push(parseInt(adminId));
+            });
+        }
 
         return chat;
     }

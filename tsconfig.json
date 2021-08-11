@@ -3,7 +3,7 @@
     "target": "es2017",
     "module": "commonjs",
     "sourceMap": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "exclude": [
     "node_modules"

@@ -1,6 +1,6 @@
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
-import * as env from 'dotenv';
+import * as dotenv from 'dotenv';
 import {database} from './database/database';
 import {Command} from './model/chat-command';
 import {inviteAnswers, kickAnswers, settings, SettingsStorage} from './database/settings-storage';
@@ -30,7 +30,7 @@ import {Chat} from './model/chat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
 
-env.config();
+dotenv.config();
 
 export const creatorId = parseInt(process.env.CREATOR_ID);
 export const isDebug = process.env.IS_DEBUG === 'true';

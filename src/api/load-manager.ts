@@ -34,7 +34,7 @@ export class LoadManager {
     }
 
     static async loadChat(peerId: number): Promise<Chat> {
-        return new Promise((resolve, reject) => {
+        return new Promise<Chat>((resolve, reject) => {
             vk.api.call('messages.getConversationsById', {peer_ids: peerId}).catch(reject).then(chats => {
                 const chat = Chat.parse(chats.items)[0];
 
