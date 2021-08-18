@@ -29,8 +29,11 @@ import {Chat} from './model/chat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
 import * as SystemInformation from 'systeminformation';
+import * as dotenv from 'dotenv';
 
-export const creatorId = 362877006;
+dotenv.config();
+
+export const creatorId = parseInt(process.env['CREATOR_ID']);
 export const isDebug = true;
 export let currentGroupId: number = -1;
 
@@ -54,7 +57,7 @@ setup();
 let startMessage = !isDebug;
 
 export let vk = new VK({
-    token: 'f2f16c92cd3c43b2b6cecc6bd2540437c4c21945d850439cb9b8f3630bc320fbaf32fb4fb6c7684c18c9a'
+    token: process.env['TOKEN']
 });
 
 globalThis.vk = vk;

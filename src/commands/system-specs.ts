@@ -1,5 +1,4 @@
 import {Command} from '../model/chat-command';
-import * as SystemInformation from 'systeminformation';
 import {Api} from '../api/api';
 import {hardwareInfo} from '../index';
 

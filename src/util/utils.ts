@@ -67,7 +67,9 @@ export class Utils {
         });
     }
 
-    static deepEqual(object1: { [x: string]: any }, object2: { [x: string]: any; year?: number; month?: number; day?: number }): boolean {
+    static deepEqual(object1: { [x: string]: any },
+                     object2: { [x: string]: any; year?: number; month?: number; day?: number }
+    ): boolean {
         if ((object1 == null || object2 == null) && object1 != object2) return false;
 
         const keys1 = Object.keys(object1);

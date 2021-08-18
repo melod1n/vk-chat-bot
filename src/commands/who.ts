@@ -4,7 +4,6 @@ import {Utils} from '../util/utils';
 import {Api} from '../api/api';
 import {whoAnswers} from '../database/settings-storage';
 import {CacheStorage} from '../database/cache-storage';
-import {Chat} from '../model/chat';
 
 export class Who extends Command {
     regexp = /^\/(who|кто)\s([^]+)/i;

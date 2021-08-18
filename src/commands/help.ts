@@ -23,7 +23,7 @@ export class Help extends Command {
             random_id: Utils.getRandomInt(10000)
         }).catch((e) => {
             error = e;
-        }).then((r) => {
+        }).then(() => {
             if (error) {
                 Api.sendMessage(context, 'Не смог отправить команды в ЛС ☹');
                 return;
