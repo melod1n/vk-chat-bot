@@ -14,7 +14,7 @@ export class Who extends Command {
     requirements = Requirements.builder().apply(false, false, true, true, false, false);
 
     async execute(context) {
-        let chat: Chat = await CacheStorage.getChat(context.peerId);
+        let chat = await CacheStorage.getChat(context.peerId);
         if (!chat) chat = await LoadManager.loadChat(context.peerId);
 
         const userId = chat.users[Utils.getRandomInt(chat.users.length)];

@@ -28,13 +28,16 @@ import {Bat} from './commands/bat';
 import {Chat} from './model/chat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
+import * as SystemInformation from 'systeminformation';
 
-export const creatorId = yourIdHere
+export const creatorId = 362877006;
 export const isDebug = true;
 export let currentGroupId: number = -1;
 
 export let currentSentMessages: number = 0;
 export let currentReceivedMessages: number = 0;
+
+export let hardwareInfo: string = '';
 
 export function increaseSentMessages() {
     currentSentMessages++;
@@ -51,7 +54,7 @@ setup();
 let startMessage = !isDebug;
 
 export let vk = new VK({
-    token: tokenHere
+    token: 'f2f16c92cd3c43b2b6cecc6bd2540437c4c21945d850439cb9b8f3630bc320fbaf32fb4fb6c7684c18c9a'
 });
 
 globalThis.vk = vk;
@@ -96,7 +99,8 @@ vk.updates.on('message_new', async (context) => {
                 return;
             }
 
-            if (requirements.requireAdmin && (!database.admins.includes(context.senderId) && context.senderId !== creatorId)) {
+            if (requirements.requireAdmin && (!database.admins.includes(context.senderId) &&
+                context.senderId !== creatorId)) {
                 console.log(`${cmd.name || cmd.title}: adminId is bad`);
                 await context.reply('Вы не являетесь администратором бота.');
                 return;
@@ -176,6 +180,12 @@ export let commands: Command[] = [
     new Who()
 ];
 
+sortCommands();
+
+function sortCommands() {
+    commands.sort(Utils.compareCommands);
+}
+
 function searchCommand(context?: MessageContext, text?: string): Command {
     return commands.find(c => c.regexp.test(context ? context.text : text));
 }
@@ -203,6 +213,7 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
 }
 
 function setup() {
+    retrieveHardwareInfo();
     process.on('uncaughtException', (e) => {
         const errorText = Utils.getExceptionText(e);
 
@@ -214,5 +225,24 @@ function setup() {
         //     random_id: Utils.getRandomInt(10000)
         // }).catch(console.error).then(() => console.log('success exception message'));
     });
+}
 
+function retrieveHardwareInfo() {
+    let text: string = '';
+
+    SystemInformation.osInfo().then(async (os) => {
+        text += `OS: ${os.distro}\n`;
+        SystemInformation.cpu().then(async (cpu) => {
+            text += `CPU: ${cpu.manufacturer} ${cpu.brand} ${cpu.physicalCores} cores ${cpu.cores} threads\n`;
+
+            SystemInformation.mem().then(async (memory) => {
+                const totalRam = memory.total / Math.pow(2, 30);
+                text += `RAM: ${totalRam} GB\n`;
+
+                console.log('Hardware info retrieved!');
+
+                hardwareInfo = text;
+            });
+        });
+    });
 }

@@ -1,4 +1,5 @@
 import * as child from 'child_process';
+import {Command} from '../model/chat-command';
 
 export class Utils {
     static executeCommand(command: string): Promise<any> {
@@ -100,6 +101,9 @@ export class Utils {
                     ${e.stack}`;
     }
 
+    static compareCommands(command1: Command, command2: Command): number {
+        return command1.title < command2.title ? -1 : command1.title > command2.title ? 1 : 0;
+    }
 
     // static getStoredAnswers(): Promise<>{
     //     try {

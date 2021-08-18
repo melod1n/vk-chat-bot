@@ -22,7 +22,7 @@ export class When extends Command {
                 text = 'никогда';
                 break;
             case 2: //seconds
-                const seconds = Utils.getRandomInt(60);
+                const seconds = Utils.getRangedRandomInt(1, 60);
 
                 text += `${seconds} `;
 
@@ -32,7 +32,7 @@ export class When extends Command {
                 );
                 break;
             case 3:
-                const minutes = Utils.getRandomInt(60);
+                const minutes = Utils.getRangedRandomInt(1, 60);
 
                 text += `${minutes} `;
 
@@ -42,7 +42,7 @@ export class When extends Command {
                 );
                 break;
             case 4:
-                const hours = Utils.getRandomInt(24);
+                const hours = Utils.getRangedRandomInt(1, 24);
 
                 text += `${hours} `;
 
@@ -52,7 +52,7 @@ export class When extends Command {
                 );
                 break;
             case 5:
-                const weeks = Utils.getRandomInt(4);
+                const weeks = Utils.getRangedRandomInt(1, 4);
 
                 text += `${weeks} `;
 
@@ -69,7 +69,7 @@ export class When extends Command {
                 );
                 break;
             case 7:
-                const years = Utils.getRandomInt(100);
+                const years = Utils.getRangedRandomInt(1, 100);
 
                 text += `${years} `;
 

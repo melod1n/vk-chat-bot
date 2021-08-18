@@ -10,10 +10,12 @@ export class WhatBetter extends Command {
     description = 'returns a or b randomly (50% chance)';
 
     async execute(context, params) {
-        const a = params[1];
-        const b = params[2].trimStart();
+        const a = params[3];
+        const b = params[5].trimStart();
 
-        const text = `${betterAnswers[Utils.getRandomInt(betterAnswers.length)]} ${Utils.getRandomInt(2) == 1 ? a : b}`;
+        const better = Utils.getRandomInt(2) == 1 ? a : b;
+
+        const text = `${betterAnswers[Utils.getRandomInt(betterAnswers.length)]} ${better}`;
 
         await Api.sendMessage(context, text, true);
     }

@@ -1,6 +1,7 @@
 import {Command} from '../model/chat-command';
 import * as SystemInformation from 'systeminformation';
 import {Api} from '../api/api';
+import {hardwareInfo} from '../index';
 
 export class SystemSpecs extends Command {
     regexp = /^\/systemspecs/i;
@@ -8,22 +9,8 @@ export class SystemSpecs extends Command {
     description = 'shows current pc\'s system specs';
 
     async execute(context) {
-        let text = '';
-
-        await Api.sendMessage(context, 'Retrieving data...').then(async () => {
-            SystemInformation.osInfo().then(async (os) => {
-                text += `OS: ${os.distro}\n`;
-                SystemInformation.cpu().then(async (cpu) => {
-                    text += `CPU: ${cpu.manufacturer} ${cpu.brand} ${cpu.physicalCores} cores ${cpu.cores} threads\n`;
-
-                    SystemInformation.mem().then(async (memory) => {
-                        const totalRam = memory.total / Math.pow(2, 30);
-                        text += `RAM: ${totalRam} GB\n`;
-
-                        await Api.sendMessage(context, text);
-                    });
-                });
-            });
-        })
+        await Api.sendMessage(context,
+            hardwareInfo.length === 0 ?
+                'Данные отсутствуют. Попробуйте позже' : hardwareInfo);
     }
 }

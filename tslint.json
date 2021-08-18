@@ -5,6 +5,18 @@
       "single"
     ],
     "semicolon": true,
-    "encoding": true
+    "encoding": true,
+    "max-line-length": {
+      "options": [
+        120
+      ]
+    }
+  },
+  "jsRules": {
+    "max-line-length": {
+      "options": [
+        120
+      ]
+    }
   }
 }

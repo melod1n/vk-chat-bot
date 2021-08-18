@@ -12,7 +12,7 @@ export class Help extends Command {
         let text = `Список команд:\n\n`;
 
         commands.forEach((cmd) => {
-            text += `"${cmd.title}": {\n  ${cmd.description}\n}\n`;
+            text += `"${cmd.title}": {\n${cmd.description}\n}\n`;
         });
 
         let error = null;
@@ -34,5 +34,4 @@ export class Help extends Command {
             if (context.isChat) Api.sendMessage(context, 'Отправил команды в ЛС 😎');
         });
     }
-
 }
