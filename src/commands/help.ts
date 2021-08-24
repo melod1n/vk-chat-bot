@@ -9,11 +9,15 @@ export class Help extends Command {
     description = 'shows list of the commands';
 
     async execute(context) {
-        let text = `Список команд:\n\n`;
+        let text = `Commands = [\n`;
 
         commands.forEach((cmd) => {
-            text += `"${cmd.title}": {\n${cmd.description}\n}\n`;
+            text += `"${cmd.title}": {\n  return: ${cmd.description}\n},\n`;
         });
+
+        text = text.substring(0, text.length - 2);
+
+        text += ']';
 
         let error = null;
 
