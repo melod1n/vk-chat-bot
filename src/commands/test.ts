@@ -1,7 +1,7 @@
 import {Command} from '../model/chat-command';
-import {settings, testAnswers} from '../database/settings-storage';
 import {Utils} from '../util/utils';
 import {Api} from '../api/api';
+import {StorageManager} from '../database/storage-manager';
 
 export class Test extends Command {
     regexp = /^(test|тест|еуые|ntcn|инноке(нтий|ш|нтич))/i;
@@ -9,9 +9,9 @@ export class Test extends Command {
     description = 'жив ли бот';
 
     async execute(context) {
-        if (!settings.testAnswer) return;
+        if (!StorageManager.settings.testAnswer) return;
 
-        const index = Utils.getRandomInt(testAnswers.length);
-        await Api.sendMessage(context, testAnswers[index]);
+        const index = Utils.getRandomInt(StorageManager.answers.testAnswers.length);
+        await Api.sendMessage(context, StorageManager.answers.testAnswers[index]);
     }
 }

@@ -2,8 +2,8 @@ import {Command, Requirements} from '../model/chat-command';
 import {LoadManager} from '../api/load-manager';
 import {Utils} from '../util/utils';
 import {Api} from '../api/api';
-import {whoAnswers} from '../database/settings-storage';
 import {CacheStorage} from '../database/cache-storage';
+import {StorageManager} from '../database/storage-manager';
 
 export class Who extends Command {
     regexp = /^\/(who|кто)\s([^]+)/i;
@@ -33,8 +33,8 @@ export class Who extends Command {
 
         const v = spl.join(' ');
 
-        const index = Utils.getRandomInt(whoAnswers.length);
+        const index = Utils.getRandomInt(StorageManager.answers.whoAnswers.length);
 
-        await Api.sendMessage(context, `${whoAnswers[index]} ${v} — ${text}`, true);
+        await Api.sendMessage(context, `${StorageManager.answers.whoAnswers[index]} ${v} — ${text}`, true);
     }
 }

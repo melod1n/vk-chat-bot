@@ -1,7 +1,8 @@
 import {Command} from '../model/chat-command';
 import {Api} from '../api/api';
-import {commands, increaseSentMessages, vk} from '../index';
+import {commands, vk} from '../index';
 import {Utils} from '../util/utils';
+import {StorageManager} from '../database/storage-manager';
 
 //TODO: rewrite forEach
 export class Help extends Command {
@@ -34,7 +35,7 @@ export class Help extends Command {
                 return;
             }
 
-            increaseSentMessages();
+            StorageManager.increaseSentMessagesCount();
 
             if (context.isChat) Api.sendMessage(context, 'Отправил команды в ЛС 😎');
         });

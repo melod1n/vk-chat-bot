@@ -1,7 +1,7 @@
 import {Command} from '../model/chat-command';
 import {Utils} from '../util/utils';
 import {Api} from '../api/api';
-import {betterAnswers} from '../database/settings-storage';
+import {StorageManager} from '../database/storage-manager';
 
 export class WhatBetter extends Command {
     regexp = /^\/(what|что)\s(better|лучше)\s([^]+)\s(or|или)\s([^]+)/i;
@@ -15,7 +15,7 @@ export class WhatBetter extends Command {
 
         const better = Utils.getRandomInt(2) == 1 ? a : b;
 
-        const text = `${betterAnswers[Utils.getRandomInt(betterAnswers.length)]} ${better}`;
+        const text = `${StorageManager.answers.betterAnswers[Utils.getRandomInt(StorageManager.answers.betterAnswers.length)]} ${better}`;
 
         await Api.sendMessage(context, text, true);
     }

@@ -1,9 +1,8 @@
-import {TAG, vk} from '../index';
+import { vk} from '../index';
 import {CacheStorage} from '../database/cache-storage';
 import {User} from '../model/user';
 import {Chat} from '../model/chat';
 import {Message} from '../model/message';
-import {mem} from 'systeminformation';
 import {Utils} from '../util/utils';
 
 class UsersLoader {
@@ -39,7 +38,6 @@ class ChatsLoader {
         return new Promise(async (resolve, reject) => {
             try {
                 const jsonChats = (await vk.api.call('messages.getConversationsById', {peer_ids: peerIds})).items;
-                console.log(`${TAG}: messages.getConversationsById`);
 
                 const chats: Chat[] = [];
                 const users: User[] = [];
@@ -50,7 +48,6 @@ class ChatsLoader {
                     const members: User[] = [];
 
                     const jsonMembers = await vk.api.call('messages.getConversationMembers', {peer_id: chat.peerId});
-                    console.log(`${TAG}: messages.getConversationsMembers`);
 
                     User.parse(jsonMembers.profiles).forEach(e => {
                         users.push(e);

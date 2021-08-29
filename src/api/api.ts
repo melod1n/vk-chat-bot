@@ -1,9 +1,7 @@
 import {MessageContext} from 'vk-io';
-import {currentSentMessages, increaseSentMessages, TAG, TAG_ERROR, vk} from '../index';
-import {LoadManager} from './load-manager';
-import {SettingsStorage} from '../database/settings-storage';
+import {vk} from '../index';
 import {Utils} from '../util/utils';
-import {Message} from '../model/message';
+import {StorageManager} from '../database/storage-manager';
 
 export class Api {
 
@@ -31,29 +29,29 @@ export class Api {
                     // @ts-ignore
                     resolve(id);
 
-                    increaseSentMessages();
+                    StorageManager.increaseSentMessagesCount();
                 }
             );
         });
     }
 
-    static async editMessage(context: MessageContext, newText: string): Promise<boolean> {
-        return new Promise(((resolve, reject) => {
-            const params = {
-                peer_id: context.peerId,
-                conversation_message_id: context.conversationMessageId,
-                message: newText
-            };
-
-            vk.api.messages.edit(params).catch(e => {
-                console.error(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
-                resolve(false);
-            }).then((response) => {
-                if (response == 1) resolve(true);
-                else reject(false);
-            });
-        }));
-    }
+    // static async editMessage(context: MessageContext, newText: string): Promise<boolean> {
+    //     return new Promise(((resolve, reject) => {
+    //         const params = {
+    //             peer_id: context.peerId,
+    //             conversation_message_id: context.conversationMessageId,
+    //             message: newText
+    //         };
+    //
+    //         vk.api.messages.edit(params).catch(e => {
+    //             console.error(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
+    //             resolve(false);
+    //         }).then((response) => {
+    //             if (response == 1) resolve(true);
+    //             else reject(false);
+    //         });
+    //     }));
+    // }
 
     static async replyMessage(context: MessageContext, message: string, keyboard?: string): Promise<number> {
         return this.sendMessage(context, message, true, context.id, keyboard);

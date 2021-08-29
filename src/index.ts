@@ -1,7 +1,7 @@
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
 import {Command, Requirements} from './model/chat-command';
-import {inviteAnswers, kickAnswers, settings, SettingsStorage} from './database/settings-storage';
+import {StorageManager} from './database/storage-manager';
 import {Api} from './api/api';
 import {Help} from './commands/help';
 import {About} from './commands/about';
@@ -25,7 +25,6 @@ import {Who} from './commands/who';
 import {Bat} from './commands/bat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
-import * as SystemInformation from 'systeminformation';
 import * as dotenv from 'dotenv';
 import {JsonRequest} from './commands/json-request';
 import {AddAdmin} from './commands/add-admin';
@@ -39,21 +38,6 @@ export let currentGroupId: number = -1;
 export const TAG = '[VKBot]';
 export const TAG_ERROR = `${TAG} [ERROR]`;
 
-export let currentSentMessages: number = 0;
-export let currentReceivedMessages: number = 0;
-
-export let hardwareInfo: string = '';
-
-export function increaseSentMessages() {
-    currentSentMessages++;
-    SettingsStorage.increaseSentMessagesCount().then();
-}
-
-export async function increaseReceivedMessages() {
-    currentReceivedMessages++;
-    SettingsStorage.increaseReceivedMessagesCount().then();
-}
-
 export let vk = new VK({
     token: process.env['TOKEN']
 });
@@ -65,6 +49,7 @@ globalThis.vk = vk;
 globalThis.cache = CacheStorage;
 globalThis.memory = MemoryCache;
 globalThis.loader = LoadManager;
+globalThis.storage = StorageManager;
 
 vk.api.groups.getById({}).catch(console.error).then((r) => {
     //@ts-ignore
@@ -130,7 +115,7 @@ vk.updates.on('message_new', async (context) => {
             );
         }
 
-        const increasePromise = increaseReceivedMessages();
+        const increasePromise = StorageManager.increaseReceivedMessagesCount();
         const checkChatPromise = CacheStorage.chats.checkIfStored(context.peerId);
         const checkUserPromise = CacheStorage.users.checkIfStored(context.senderId);
 
@@ -218,8 +203,8 @@ function sortCommands() {
     commands.sort(Utils.compareCommands);
 }
 
-async function searchCommand(context?: MessageContext, text?: string): Promise<Command> {
-    return new Promise<Command>(((resolve, reject) => {
+async function searchCommand(context?: MessageContext, text?: string): Promise<Command | null> {
+    return new Promise<Command>((resolve => {
         for (let i = 0; i < commands.length; i++) {
             const c = commands[i];
             if (c.regexp.test(context ? context.text : text)) {
@@ -232,23 +217,23 @@ async function searchCommand(context?: MessageContext, text?: string): Promise<C
 }
 
 async function sendInviteUserMessage(context: MessageContext): Promise<any> {
-    if (!settings.sendActionMessage || context.eventMemberId < 0) return;
+    if (!StorageManager.settings.sendActionMessage || context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
         Api.sendMessage(
             context,
-            `@id${context.eventMemberId}(${inviteAnswers[Utils.getRandomInt(inviteAnswers.length)]})`
+            `@id${context.eventMemberId}(${StorageManager.answers.inviteAnswers[Utils.getRandomInt(StorageManager.answers.inviteAnswers.length)]})`
         ).catch(reject).then(resolve);
     });
 }
 
 async function sendKickUserMessage(context: MessageContext): Promise<any> {
-    if (!settings.sendActionMessage || context.eventMemberId < 0) return;
+    if (!StorageManager.settings.sendActionMessage || context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
         Api.sendMessage(
             context,
-            `@id${context.eventMemberId}(${kickAnswers[Utils.getRandomInt(kickAnswers.length)]})`
+            `@id${context.eventMemberId}(${StorageManager.answers.kickAnswers[Utils.getRandomInt(StorageManager.answers.kickAnswers.length)]})`
         ).catch(reject).then(resolve);
     });
 }
@@ -261,27 +246,9 @@ async function setup() {
     });
 
     await Promise.all([
-        retrieveHardwareInfo(),
         fillMemoryCache(),
-        // updateChats()
+        updateChats()
     ]);
-}
-
-async function retrieveHardwareInfo() {
-    return;
-    const osInfo = await SystemInformation.osInfo();
-    const cpuInfo = await SystemInformation.cpu();
-    const memoryInfo = await SystemInformation.mem();
-
-    const totalRam = memoryInfo.total / Math.pow(2, 30);
-
-    const text = `OS: ${osInfo.distro}
-                  CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
-                  RAM: ${totalRam} GB`;
-
-    console.log(`${TAG}: Hardware info retrieved!`);
-
-    hardwareInfo = text;
 }
 
 async function fillMemoryCache() {
@@ -297,7 +264,7 @@ async function fillMemoryCache() {
 }
 
 async function updateChats(): Promise<void> {
-    return new Promise((async (resolve, reject) => {
+    return new Promise((async (resolve) => {
         const chats = await CacheStorage.chats.get();
 
         let chatIds: string = null;
