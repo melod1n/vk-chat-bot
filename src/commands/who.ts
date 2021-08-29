@@ -8,13 +8,13 @@ import {CacheStorage} from '../database/cache-storage';
 export class Who extends Command {
     regexp = /^\/(who|кто)\s([^]+)/i;
     title = '/who [value]';
-    description = 'returns random people from chat\'s participants (only users)';
+    description = 'random people from chat\'s participants (only users)';
 
     requirements = Requirements.builder().apply(false, false, true, true, false, false);
 
     async execute(context) {
-        let chat = await CacheStorage.getChat(context.peerId);
-        if (!chat) chat = await LoadManager.loadChat(context.peerId);
+        let chat = await CacheStorage.chats.getSingle(context.peerId);
+        if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
         const userId = chat.users[Utils.getRandomInt(chat.users.length)];
 
@@ -23,8 +23,8 @@ export class Who extends Command {
             return;
         }
 
-        let user = await CacheStorage.getUser(userId);
-        if (!user) user = await LoadManager.loadUser(userId);
+        let user = await CacheStorage.users.getSingle(userId);
+        if (!user) user = await LoadManager.users.loadSingle(userId);
 
         const text = `@id${userId}(${user.firstName} ${user.lastName})`;
 

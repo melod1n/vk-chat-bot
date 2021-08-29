@@ -6,7 +6,7 @@ export class Random extends Command {
     regexp = /^\/random\s(\d+)\s(\d+)/i;
     title = '/random [min] [max]';
     name = '/random';
-    description = 'returns ranged random from parameters';
+    description = 'ranged random from parameters';
 
     async execute(context, params) {
         const min = parseInt(params[1]);

@@ -1,13 +1,11 @@
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
-import {database} from './database/database';
-import {Command} from './model/chat-command';
+import {Command, Requirements} from './model/chat-command';
 import {inviteAnswers, kickAnswers, settings, SettingsStorage} from './database/settings-storage';
 import {Api} from './api/api';
 import {Help} from './commands/help';
 import {About} from './commands/about';
 import {Admins} from './commands/admins';
-import {Ae} from './commands/ae';
 import {Kick} from './commands/kick';
 import {LoadUser} from './commands/load-user';
 import {Ping} from './commands/ping';
@@ -25,17 +23,21 @@ import {WhatBetter} from './commands/what-better';
 import {When} from './commands/when';
 import {Who} from './commands/who';
 import {Bat} from './commands/bat';
-import {Chat} from './model/chat';
 import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
 import * as SystemInformation from 'systeminformation';
 import * as dotenv from 'dotenv';
+import {JsonRequest} from './commands/json-request';
+import {AddAdmin} from './commands/add-admin';
+import {MemoryCache} from './database/memory-cache';
 
 dotenv.config();
 
 export const creatorId = parseInt(process.env['CREATOR_ID']);
-export const isDebug = true;
 export let currentGroupId: number = -1;
+
+export const TAG = '[VKBot]';
+export const TAG_ERROR = `${TAG} [ERROR]`;
 
 export let currentSentMessages: number = 0;
 export let currentReceivedMessages: number = 0;
@@ -47,22 +49,22 @@ export function increaseSentMessages() {
     SettingsStorage.increaseSentMessagesCount().then();
 }
 
-export function increaseReceivedMessages() {
+export async function increaseReceivedMessages() {
     currentReceivedMessages++;
     SettingsStorage.increaseReceivedMessagesCount().then();
 }
-
-setup();
-
-let startMessage = !isDebug;
 
 export let vk = new VK({
     token: process.env['TOKEN']
 });
 
-globalThis.vk = vk;
+setup().then();
 
-console.log(`debug: ${isDebug}`);
+//for /ae command
+globalThis.vk = vk;
+globalThis.cache = CacheStorage;
+globalThis.memory = MemoryCache;
+globalThis.loader = LoadManager;
 
 vk.api.groups.getById({}).catch(console.error).then((r) => {
     //@ts-ignore
@@ -70,29 +72,11 @@ vk.api.groups.getById({}).catch(console.error).then((r) => {
     globalThis.id = currentGroupId;
 });
 
-vk.updates.on(['chat_invite_user', 'chat_invite_user_by_link'], async (context) => {
-    await sendInviteUserMessage(context);
-});
-
-vk.updates.on('chat_kick_user', async (context) => {
-    await sendKickUserMessage(context);
-});
-
 vk.updates.on('message_new', async (context) => {
     if (context.isOutbox) return;
 
-    let chat: Chat = null;
-
-    if (context.isChat) {
-        chat = await CacheStorage.getChat(context.peerId);
-        if (!chat && context.isChat) chat = await LoadManager.loadChat(context.peerId);
-        else LoadManager.loadChat(context.peerId).then(c => chat = c);
-    }
-
-    increaseReceivedMessages();
-
     try {
-        const cmd = searchCommand(context);
+        const cmd = await searchCommand(context);
         if (cmd) {
             const requirements = cmd.requirements;
 
@@ -102,17 +86,22 @@ vk.updates.on('message_new', async (context) => {
                 return;
             }
 
-            if (requirements.requireAdmin && (!database.admins.includes(context.senderId) &&
+            if (requirements.requireAdmin && (!MemoryCache.admins.includes(context.senderId) &&
                 context.senderId !== creatorId)) {
                 console.log(`${cmd.name || cmd.title}: adminId is bad`);
                 await context.reply('Вы не являетесь администратором бота.');
                 return;
             }
 
-            if (chat && requirements.requireChatAdmin && !chat.admins.includes(-Math.abs(currentGroupId))) {
-                console.log(`${cmd.name || cmd.title}: chatAdminId is bad`);
-                await context.reply('Бот не является администратором чата.');
-                return;
+            if (requirements.requireChatAdmin && context.isChat) {
+                let chat = await CacheStorage.chats.getSingle(context.peerId);
+                if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
+
+                if (!chat.admins.includes(-Math.abs(currentGroupId))) {
+                    console.log(`${cmd.name || cmd.title}: chatAdminId is bad`);
+                    await context.reply('Бот не является администратором чата.');
+                    return;
+                }
             }
 
             if (requirements.requireChat && !context.isChat) {
@@ -140,24 +129,62 @@ vk.updates.on('message_new', async (context) => {
                 context.replyMessage
             );
         }
+
+        const increasePromise = increaseReceivedMessages();
+        const checkChatPromise = CacheStorage.chats.checkIfStored(context.peerId);
+        const checkUserPromise = CacheStorage.users.checkIfStored(context.senderId);
+
+        await Promise.all([increasePromise, checkChatPromise, checkUserPromise]);
     } catch (e) {
-        console.log(Utils.getExceptionText(e));
+        console.log(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
     }
+});
+
+vk.updates.on(['chat_invite_user', 'chat_invite_user_by_link'], async (context) => {
+    await sendInviteUserMessage(context);
+});
+
+vk.updates.on('chat_kick_user', async (context) => {
+    await sendKickUserMessage(context);
 });
 
 vk.updates.start().catch(console.error).then(async () => {
     const msg = `bot is ready ;)`;
-
     console.log(msg);
-
-    if (startMessage) {
-        vk.api.messages.send({
-            peer_id: creatorId,
-            message: `${msg}\n debug: ${isDebug}`,
-            random_id: 0
-        }).catch(console.error);
-    }
 });
+
+class Ae extends Command {
+    regexp = /^\/ae\s([^]+)/i;
+    title = '/ae [value]';
+    name = '/ae';
+    description = 'js eval';
+
+    requirements = Requirements.builder().apply(true);
+
+    async execute(context, params, fwd, reply) {
+        const match = params[1];
+
+        try {
+            let e = eval(match);
+            e = ((typeof e == 'string') ? e : JSON.stringify(e));
+
+            await Api.sendMessage(context, e);
+        } catch (e) {
+            const text = e.message;
+
+            if (text.includes('is not defined')) {
+                await Api.sendMessage(context, 'variable is not defined');
+                return;
+            }
+
+            console.error(`${text}
+                * Stacktrace: ${e.stack}`);
+
+            await Api.sendMessage(context, text);
+        }
+    }
+
+}
 
 export let commands: Command[] = [
     new About(),
@@ -180,7 +207,9 @@ export let commands: Command[] = [
     new UserTitle(),
     new WhatBetter(),
     new When(),
-    new Who()
+    new Who(),
+    new JsonRequest(),
+    new AddAdmin()
 ];
 
 sortCommands();
@@ -189,8 +218,17 @@ function sortCommands() {
     commands.sort(Utils.compareCommands);
 }
 
-function searchCommand(context?: MessageContext, text?: string): Command {
-    return commands.find(c => c.regexp.test(context ? context.text : text));
+async function searchCommand(context?: MessageContext, text?: string): Promise<Command> {
+    return new Promise<Command>(((resolve, reject) => {
+        for (let i = 0; i < commands.length; i++) {
+            const c = commands[i];
+            if (c.regexp.test(context ? context.text : text)) {
+                return resolve(c);
+            }
+        }
+
+        resolve(null);
+    }));
 }
 
 async function sendInviteUserMessage(context: MessageContext): Promise<any> {
@@ -215,37 +253,66 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
     });
 }
 
-function setup() {
-    retrieveHardwareInfo();
+async function setup() {
     process.on('uncaughtException', (e) => {
         const errorText = Utils.getExceptionText(e);
 
-        console.error(errorText);
-
-        // vk.api.messages.send({
-        //     message: errorText,
-        //     peer_id: creatorId,
-        //     random_id: Utils.getRandomInt(10000)
-        // }).catch(console.error).then(() => console.log('success exception message'));
+        console.error(`${TAG_ERROR}: ${errorText}`);
     });
+
+    await Promise.all([
+        retrieveHardwareInfo(),
+        fillMemoryCache(),
+        // updateChats()
+    ]);
 }
 
-function retrieveHardwareInfo() {
-    let text: string = '';
+async function retrieveHardwareInfo() {
+    return;
+    const osInfo = await SystemInformation.osInfo();
+    const cpuInfo = await SystemInformation.cpu();
+    const memoryInfo = await SystemInformation.mem();
 
-    SystemInformation.osInfo().then(async (os) => {
-        text += `OS: ${os.distro}\n`;
-        SystemInformation.cpu().then(async (cpu) => {
-            text += `CPU: ${cpu.manufacturer} ${cpu.brand} ${cpu.physicalCores} cores ${cpu.cores} threads\n`;
+    const totalRam = memoryInfo.total / Math.pow(2, 30);
 
-            SystemInformation.mem().then(async (memory) => {
-                const totalRam = memory.total / Math.pow(2, 30);
-                text += `RAM: ${totalRam} GB\n`;
+    const text = `OS: ${osInfo.distro}
+                  CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
+                  RAM: ${totalRam} GB`;
 
-                console.log('Hardware info retrieved!');
+    console.log(`${TAG}: Hardware info retrieved!`);
 
-                hardwareInfo = text;
-            });
-        });
-    });
+    hardwareInfo = text;
+}
+
+async function fillMemoryCache() {
+    MemoryCache.clear();
+
+    const chats = await CacheStorage.chats.get();
+    const users = await CacheStorage.users.get();
+    const admins = await CacheStorage.admins.get();
+
+    chats.forEach(c => MemoryCache.appendChat(c));
+    users.forEach(u => MemoryCache.appendUser(u));
+    admins.forEach(a => MemoryCache.appendAdmin(a));
+}
+
+async function updateChats(): Promise<void> {
+    return new Promise((async (resolve, reject) => {
+        const chats = await CacheStorage.chats.get();
+
+        let chatIds: string = null;
+
+        if (chats.length == 0) {
+            resolve();
+            return;
+        } else {
+            chatIds = `${chats[0].peerId}`;
+            for (let i = 1; i < chats.length; i++) chatIds += `,${chats[i].peerId}`;
+
+            await LoadManager.chats.load(chatIds);
+            await fillMemoryCache();
+
+            console.log(`${TAG}: cached chats updated`);
+        }
+    }));
 }

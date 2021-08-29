@@ -2,7 +2,29 @@ import * as child from 'child_process';
 import {Command} from '../model/chat-command';
 
 export class Utils {
-    static executeCommand(command: string): Promise<any> {
+
+    static objectToArray(obj: any): any[] {
+        return [obj];
+    }
+
+    static numbersToString(num: number[]): string {
+        if (!num || num.length == 0) return null;
+
+        let result = `${num[0]}`;
+
+        for (let i = 1; i < num.length; i++) result += `,${num[i]}`;
+
+
+        return result;
+    }
+
+    static delay(milliseconds: number) {
+        return new Promise(function (resolve) {
+            setTimeout(resolve, milliseconds);
+        });
+    }
+
+    static async executeCommand(command: string): Promise<string> {
         return new Promise<any>(((resolve, reject) => {
             child.exec(command, (error, stdout, stderr) => {
                 if (error) reject(error);

@@ -3,16 +3,17 @@ import {Api} from '../api/api';
 import {commands, increaseSentMessages, vk} from '../index';
 import {Utils} from '../util/utils';
 
+//TODO: rewrite forEach
 export class Help extends Command {
     regexp = /^\/help/i;
     title = '/help';
-    description = 'shows list of the commands';
+    description = 'this list';
 
     async execute(context) {
         let text = `Commands = [\n`;
 
         commands.forEach((cmd) => {
-            text += `"${cmd.title}": {\n  return: ${cmd.description}\n},\n`;
+            text += ` "${cmd.title}": {\n   return: ${cmd.description}\n},\n`;
         });
 
         text = text.substring(0, text.length - 2);

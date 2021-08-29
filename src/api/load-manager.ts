@@ -1,26 +1,90 @@
-import {vk} from '../index';
+import {TAG, vk} from '../index';
 import {CacheStorage} from '../database/cache-storage';
 import {User} from '../model/user';
 import {Chat} from '../model/chat';
 import {Message} from '../model/message';
+import {mem} from 'systeminformation';
+import {Utils} from '../util/utils';
 
-export class LoadManager {
+class UsersLoader {
 
-    static async loadUser(userId: number): Promise<User> {
+    async load(userIds: string): Promise<User[]> {
+        if (!userIds || userIds.length == 0) return null;
+
         return new Promise((resolve, reject) => {
             vk.api.users.get({
-                user_ids: userId.toString(),
+                user_ids: userIds,
                 fields: ['photo_50', 'photo_100', 'photo_200', 'status', 'screen_name', 'online', 'last_seen', 'verified', 'sex']
-            }).catch(reject).then(r => {
-                const user = new User(r[0]);
-                resolve(user);
+            }).catch(reject).then(async (r) => {
+                const users = User.parse(r);
+                resolve(users);
 
-                CacheStorage.storeUser(user);
+                await CacheStorage.users.store(users);
             });
         });
     }
 
-    static async loadMessageByConversationMessageId(peerId: number, conversationMessageId: number): Promise<Message> {
+    async loadSingle(userId: number): Promise<User> {
+        return new Promise((resolve, reject) =>
+            this.load(Utils.numbersToString([userId])).then(users => resolve(users[0])).catch(reject));
+    }
+
+}
+
+class ChatsLoader {
+
+    async load(peerIds: string): Promise<Chat[]> {
+        if (!peerIds || peerIds.length == 0) return null;
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const jsonChats = (await vk.api.call('messages.getConversationsById', {peer_ids: peerIds})).items;
+                console.log(`${TAG}: messages.getConversationsById`);
+
+                const chats: Chat[] = [];
+                const users: User[] = [];
+
+                for (const c of jsonChats) {
+                    const chat = new Chat(c);
+                    const membersIds = [];
+                    const members: User[] = [];
+
+                    const jsonMembers = await vk.api.call('messages.getConversationMembers', {peer_id: chat.peerId});
+                    console.log(`${TAG}: messages.getConversationsMembers`);
+
+                    User.parse(jsonMembers.profiles).forEach(e => {
+                        users.push(e);
+                        members.push(e);
+                    });
+
+                    members.forEach(user => membersIds.push(user.userId));
+
+                    chat.users = membersIds;
+                    chats.push(chat);
+                }
+
+                resolve(chats);
+
+                const usersPromise = CacheStorage.users.store(users);
+                const chatsPromise = CacheStorage.chats.store(chats);
+
+                await Promise.all([usersPromise, chatsPromise]);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    async loadSingle(peerId: number): Promise<Chat> {
+        return new Promise((resolve, reject) =>
+            this.load(Utils.numbersToString([peerId])).then(chats => resolve(chats[0])).catch(reject));
+    }
+
+}
+
+class MessagesLoader {
+
+    async loadByConversationMessageId(peerId: number, conversationMessageId: number): Promise<Message> {
         return new Promise((resolve, reject) => {
             vk.api.messages.getByConversationMessageId({
                 peer_id: peerId,
@@ -33,26 +97,12 @@ export class LoadManager {
         });
     }
 
-    static async loadChat(peerId: number): Promise<Chat> {
-        return new Promise<Chat>((resolve, reject) => {
-            vk.api.call('messages.getConversationsById', {peer_ids: peerId}).catch(reject).then(chats => {
-                const chat = Chat.parse(chats.items)[0];
+}
 
-                vk.api.call('messages.getConversationMembers', {peer_id: peerId}).catch(reject).then(r => {
-                    const members = User.parse(r.profiles);
-                    const membersIds = [];
+export class LoadManager {
 
-                    members.forEach(user => membersIds.push(user.userId));
-
-                    chat.users = membersIds;
-
-                    resolve(chat);
-
-                    CacheStorage.storeUsers(members);
-                    CacheStorage.storeChat(chat);
-                });
-            });
-        });
-    }
+    static users = new UsersLoader();
+    static chats = new ChatsLoader();
+    static messages = new MessagesLoader();
 
 }

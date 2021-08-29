@@ -1,30 +1,27 @@
 import {Command} from '../model/chat-command';
-import {database} from '../database/database';
 import {Api} from '../api/api';
 import {CacheStorage} from '../database/cache-storage';
 import {LoadManager} from '../api/load-manager';
+import {MemoryCache} from '../database/memory-cache';
 
 export class Admins extends Command {
     regexp = /^\/admins/i;
     title = '/admins';
-    description = 'returns list of bot\'s admins';
+    description = 'list of bot\'s admins';
 
     async execute(context) {
-        if (database.admins.length == 0) {
+        if (MemoryCache.admins.length == 0) {
             await Api.sendMessage(context, 'Администраторов нет 😞');
             return;
         }
 
         let text = 'Список администраторов:\n\n';
 
-        for (let i = 0; i < database.admins.length; i++) {
-            const id = database.admins[i];
+        for (let i = 0; i < MemoryCache.admins.length; i++) {
+            const id = MemoryCache.admins[i];
 
-            let user = await CacheStorage.getUser(id);
-
-            if (!user) {
-                user = await LoadManager.loadUser(id);
-            }
+            let user = await CacheStorage.users.getSingle(id);
+            if (!user) user = await LoadManager.users.loadSingle(id);
 
             text += `❤ @id${id}(${user.firstName} ${user.lastName})\n`;
         }

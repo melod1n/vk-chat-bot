@@ -4,17 +4,18 @@ import {Api} from '../api/api';
 export class Ping extends Command {
     regexp = /^\/ping/i;
     title = '/ping';
-    description = 'returns current ping';
+    description = 'bot\'s ping';
 
     async execute(context) {
         let startTime = new Date().getMilliseconds();
 
-        await Api.sendMessage(context, 'pong').then(async () => {
-            const nowMillis = new Date().getMilliseconds();
+        await Api.sendMessage(context, 'pong');
 
-            const change = Math.abs(nowMillis - startTime);
-            await Api.sendMessage(context, `ping: ${change} ms`);
-        });
+        const nowMillis = new Date().getMilliseconds();
+
+        const change = Math.abs(nowMillis - startTime);
+
+        await Api.sendMessage(context, `ping: ${change} ms`);
     }
 
 

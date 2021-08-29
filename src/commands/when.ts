@@ -7,7 +7,7 @@ export class When extends Command {
     regexp = /^\/(when|когда)\s([^]+)/i;
     title = '/when [value]';
     name = '/when';
-    description = 'returns random date';
+    description = 'random date';
 
     async execute(context, params) {
         let text = 'через ';
@@ -80,7 +80,10 @@ export class When extends Command {
                 break;
         }
 
-        const msg = await LoadManager.loadMessageByConversationMessageId(context.peerId, context.conversationMessageId);
+        const msg = await LoadManager.messages.loadByConversationMessageId(
+            context.peerId,
+            context.conversationMessageId
+        );
 
         await Api.sendMessage(context, text, false, msg.messageId).catch(console.error);
     }

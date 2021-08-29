@@ -7,7 +7,7 @@ export class WhatBetter extends Command {
     regexp = /^\/(what|что)\s(better|лучше)\s([^]+)\s(or|или)\s([^]+)/i;
     title = '/what better [a] or [b]';
     name = '/what better';
-    description = 'returns a or b randomly (50% chance)';
+    description = 'a or b randomly (50% chance)';
 
     async execute(context, params) {
         const a = params[3];

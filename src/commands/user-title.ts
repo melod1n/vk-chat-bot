@@ -8,15 +8,15 @@ export class UserTitle extends Command {
     regexp = /^\/usertitle\s(\d+)/i;
     title = '/userTitle [userId]';
     name = '/userTitle';
-    description = 'change chat\'s photo and title to user\'s';
+    description = 'changes chat\'s photo and title to user\'s';
 
     requirements = Requirements.builder().apply(false, true, true, true);
 
     async execute(context, params) {
         const userId = parseInt(params[1]);
 
-        let user = await CacheStorage.getUser(userId);
-        if (!user) user = await LoadManager.loadUser(userId);
+        let user = await CacheStorage.users.getSingle(userId);
+        if (!user) user = await LoadManager.users.loadSingle(userId);
 
         const fullName = `${user.firstName} ${user.lastName}`;
         const photo = user.photo200;

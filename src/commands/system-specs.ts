@@ -5,7 +5,7 @@ import {hardwareInfo} from '../index';
 export class SystemSpecs extends Command {
     regexp = /^\/systemspecs/i;
     title = '/systemSpecs';
-    description = 'shows current pc\'s system specs';
+    description = 'current hardware specs';
 
     async execute(context) {
         await Api.sendMessage(context,

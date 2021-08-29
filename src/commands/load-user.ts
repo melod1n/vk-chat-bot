@@ -6,12 +6,12 @@ export class LoadUser extends Command {
     regexp = /^\/loaduser\s(\d+)/i;
     title = '/loadUser [id]';
     name = '/loadUser';
-    description = 'returns user from vk api by it\'s id';
+    description = 'user from vk api by it\'s id';
 
     requirements = Requirements.builder().apply(false, true);
 
     async execute(context, params) {
-        await Api.sendMessage(context, JSON.stringify(await LoadManager.loadUser(parseInt(params[1]))));
+        await Api.sendMessage(context, JSON.stringify(await LoadManager.users.load(`${parseInt(params[1])}`)));
     }
 
 }

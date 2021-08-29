@@ -1,5 +1,5 @@
 import {MessageContext} from 'vk-io';
-import {currentSentMessages, increaseSentMessages, vk} from '../index';
+import {currentSentMessages, increaseSentMessages, TAG, TAG_ERROR, vk} from '../index';
 import {LoadManager} from './load-manager';
 import {SettingsStorage} from '../database/settings-storage';
 import {Utils} from '../util/utils';
@@ -14,7 +14,8 @@ export class Api {
         }).catch(reject).then(resolve));
     }
 
-    static async sendMessage(context: MessageContext, message?: string, disableMentions?: boolean, replyTo?: number, keyboard?: string): Promise<number> {
+    static async sendMessage(context: MessageContext, message?: string, disableMentions?: boolean,
+                             replyTo?: number, keyboard?: string): Promise<number> {
         return new Promise((resolve, reject) => {
             const params = {
                 peer_id: context.peerId,
@@ -34,6 +35,24 @@ export class Api {
                 }
             );
         });
+    }
+
+    static async editMessage(context: MessageContext, newText: string): Promise<boolean> {
+        return new Promise(((resolve, reject) => {
+            const params = {
+                peer_id: context.peerId,
+                conversation_message_id: context.conversationMessageId,
+                message: newText
+            };
+
+            vk.api.messages.edit(params).catch(e => {
+                console.error(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
+                resolve(false);
+            }).then((response) => {
+                if (response == 1) resolve(true);
+                else reject(false);
+            });
+        }));
     }
 
     static async replyMessage(context: MessageContext, message: string, keyboard?: string): Promise<number> {
