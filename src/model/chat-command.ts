@@ -23,7 +23,14 @@ export class Requirements {
         return new Requirements();
     }
 
-    apply(creatorOnly: boolean = false, requireAdmin: boolean = false, requireChatAdmin: boolean = false, requireChat: boolean = false, requireForwards: boolean = false, requireReply: boolean = false): this {
+    apply(
+        creatorOnly: boolean = false,
+        requireAdmin: boolean = false,
+        requireChatAdmin: boolean = false,
+        requireChat: boolean = false,
+        requireForwards: boolean = false,
+        requireReply: boolean = false
+    ): this {
         this.creatorOnly = creatorOnly;
         this.requireAdmin = requireAdmin;
         this.requireChatAdmin = requireChatAdmin;

@@ -129,22 +129,7 @@ export class Utils {
         return command1.title < command2.title ? -1 : command1.title > command2.title ? 1 : 0;
     }
 
-    // static getStoredAnswers(): Promise<>{
-    //     try {
-    //         // @ts-ignore
-    //         const json = JSON.parse(fs.readFileSync('answers.json'));
-    //
-    //         testAnswers = json.test;
-    //         betterAnswers = json.better;
-    //         whoAnswers = json.who;
-    //         kickAnswers = json.kick;
-    //         inviteAnswers = json.invite;
-    //         dayPidorAnswers = json.dayPidor;
-    //
-    //         return 'success';
-    //     } catch (e) {
-    //         console.error(e);
-    //         return e.toString();
-    //     }
-    // }
+    static getCommandText(cmd: Command): string {
+        return ` "${cmd.title}": {\n   return: ${cmd.description}\n}`;
+    }
 }
