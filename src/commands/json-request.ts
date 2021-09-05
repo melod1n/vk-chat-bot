@@ -1,5 +1,5 @@
 import {Command, Requirements} from '../model/chat-command';
-import {TAG, TAG_ERROR} from '../index';
+import {TAG_ERROR} from '../index';
 import {Utils} from '../util/utils';
 import * as fetch from 'node-fetch';
 import {Api} from '../api/api';
@@ -18,7 +18,9 @@ export class JsonRequest extends Command {
         await Api.sendMessage(context, 'секунду...');
 
         try {
-            const result = JSON.stringify((await fetch(url)).json());
+            const f = (await fetch(url));
+            const js = await f.json();
+            const result = (JSON.stringify(js, null, 2));
             await Api.sendMessage(context, result, null, context.id);
         } catch (e) {
             console.error(`${TAG_ERROR} /json: ${Utils.getExceptionText(e)}`);

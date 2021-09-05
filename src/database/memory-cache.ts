@@ -1,17 +1,17 @@
-import {User} from '../model/user';
-import {Chat} from '../model/chat';
+import {VkUser} from '../model/vk-user';
+import {VkChat} from '../model/vk-chat';
 
 export class MemoryCache {
 
-    static users: User[] = [];
-    static chats: Chat[] = [];
+    static users: VkUser[] = [];
+    static chats: VkChat[] = [];
     static admins: number[] = [];
 
-    static appendUser(user: User) {
+    static appendUser(user: VkUser) {
         this.users.push(user);
     }
 
-    static appendChat(chat: Chat) {
+    static appendChat(chat: VkChat) {
         this.chats.push(chat);
     }
 
@@ -25,16 +25,16 @@ export class MemoryCache {
         this.admins = [];
     }
 
-    static includesUser(user: User): boolean {
+    static includesUser(user: VkUser): boolean {
         for (let i = 0; i < this.users.length; i++) {
             const storedUser = this.users[i];
-            if (user.userId == storedUser.userId) return true;
+            if (user.id == storedUser.id) return true;
         }
 
         return false;
     }
 
-    static includesChat(chat: Chat): boolean {
+    static includesChat(chat: VkChat): boolean {
         for (let i = 0; i < this.chats.length; i++) {
             const storedChat = this.chats[i];
             if (chat.peerId == storedChat.peerId) return true;

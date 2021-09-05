@@ -1,9 +1,9 @@
 import {Command, Requirements} from '../model/chat-command';
 import {MessageContext, MessageForwardsCollection} from 'vk-io';
-import {CacheStorage} from '../database/cache-storage';
 import {TAG, TAG_ERROR} from '../index';
 import {LoadManager} from '../api/load-manager';
 import {Api} from '../api/api';
+import {CacheStorage} from '../database/cache-storage';
 
 export class AddAdmin extends Command {
 
@@ -13,16 +13,20 @@ export class AddAdmin extends Command {
 
     requirements = Requirements.builder().apply(true);
 
-    async execute(context: MessageContext, params: string[],
-                  fwd?: MessageForwardsCollection, reply?: MessageContext): Promise<void> {
+    async execute(
+        context: MessageContext,
+        params: string[],
+        fwd?: MessageForwardsCollection,
+        reply?: MessageContext
+    ): Promise<void> {
 
-        let userId = -1;
+        let userId: number = null;
 
         if (reply) {
             userId = reply.senderId;
         }
 
-        if (userId == -1) {
+        if (!userId) {
             if (context.text.includes(' ')) {
                 const split = context.text.split(' ');
                 try {
@@ -34,9 +38,7 @@ export class AddAdmin extends Command {
             }
         }
 
-        let messageId: number = null;
-
-        if (userId <= 0) {
+        if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /addAdmin: wrong userId`);
             await Api.sendMessage(context, 'Неверный userId.', null, context.id);
         } else {
@@ -44,15 +46,15 @@ export class AddAdmin extends Command {
 
             let user = await CacheStorage.users.getSingle(userId);
             if (!user) {
-                messageId = await Api.sendMessage(context, 'секунду...');
+                await Api.sendMessage(context, 'секунду...');
                 user = await LoadManager.users.loadSingle(userId);
             }
 
-            const message = `@id${user.userId}(${user.firstName} ${user.lastName}) теперь администратор! 🥳`;
+            const message = `@id${user.id}(${user.firstName} ${user.lastName}) теперь администратор! 🥳`;
 
             const sendMessagePromise = Api.sendMessage(context, message, true);
             const storeUserPromise = CacheStorage.users.store([user]);
-            const storeAdminPromise = CacheStorage.admins.store([user.userId]);
+            const storeAdminPromise = CacheStorage.admins.store([user.id]);
 
             await Promise.all([sendMessagePromise, storeUserPromise, storeAdminPromise]);
         }

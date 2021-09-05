@@ -16,7 +16,7 @@ export class Who extends Command {
         let chat = await CacheStorage.chats.getSingle(context.peerId);
         if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
-        const userId = chat.users[Utils.getRandomInt(chat.users.length)];
+        const userId = chat.usersIds[Utils.getRandomInt(chat.usersIds.length)];
 
         if (!userId) {
             await context.reply('никого не нашёл :(');

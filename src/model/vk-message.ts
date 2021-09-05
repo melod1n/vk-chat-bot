@@ -1,4 +1,4 @@
-export class Message {
+export class VkMessage {
 
     messageId: number;
     peerId: number;
@@ -7,9 +7,9 @@ export class Message {
     isOut: boolean;
     text: string;
     randomId: number;
-    fwdMessages?: Message[];
+    fwdMessages?: VkMessage[];
     attachments?: any[];
-    replyMessage?: Message;
+    replyMessage?: VkMessage;
 
     constructor(json = null) {
         if (json) {
@@ -24,15 +24,15 @@ export class Message {
             this.fwdMessages = json.fwdMessages;
             this.attachments = json.attachments;
 
-            this.replyMessage = new Message(json.reply_message);
+            this.replyMessage = new VkMessage(json.reply_message);
         }
     }
 
-    static parse(array): Message[] {
-        const messages: Message[] = [];
+    static parse(array): VkMessage[] {
+        const messages: VkMessage[] = [];
 
         for (let i = 0; i < array.length; i++) {
-            messages.push(new Message(array[i]));
+            messages.push(new VkMessage(array[i]));
         }
 
         return messages;

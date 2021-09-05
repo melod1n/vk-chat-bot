@@ -1,8 +1,8 @@
 import {Command} from '../model/chat-command';
 import {Api} from '../api/api';
-import {CacheStorage} from '../database/cache-storage';
 import {LoadManager} from '../api/load-manager';
 import {MemoryCache} from '../database/memory-cache';
+import {CacheStorage} from '../database/cache-storage';
 
 export class Admins extends Command {
     regexp = /^\/admins/i;

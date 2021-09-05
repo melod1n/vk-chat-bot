@@ -5,18 +5,14 @@
       "single"
     ],
     "semicolon": true,
-    "encoding": true,
-    "max-line-length": {
-      "options": [
-        120
-      ]
-    }
+    "encoding": true
   },
   "jsRules": {
-    "max-line-length": {
-      "options": [
-        120
-      ]
-    }
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "semicolon": true,
+    "encoding": true
   }
 }

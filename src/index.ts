@@ -1,3 +1,6 @@
+import 'reflect-metadata';
+import {Container} from 'inversify';
+import {InjectManager} from './di/inversify.config';
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
 import {Command, Requirements} from './model/chat-command';
@@ -29,8 +32,16 @@ import * as dotenv from 'dotenv';
 import {JsonRequest} from './commands/json-request';
 import {AddAdmin} from './commands/add-admin';
 import {MemoryCache} from './database/memory-cache';
+import {RemoveAdmin} from './commands/remove-admin';
+import {Online} from './commands/online';
+import {Offline} from './commands/offline';
+
+export const AppContainer = new Container();
+InjectManager.init();
+
 
 dotenv.config();
+
 
 export const creatorId = parseInt(process.env['CREATOR_ID']);
 export let currentGroupId: number = -1;
@@ -50,6 +61,7 @@ globalThis.cache = CacheStorage;
 globalThis.memory = MemoryCache;
 globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
+
 
 vk.api.groups.getById({}).catch(console.error).then((r) => {
     //@ts-ignore
@@ -194,7 +206,10 @@ export let commands: Command[] = [
     new When(),
     new Who(),
     new JsonRequest(),
-    new AddAdmin()
+    new AddAdmin(),
+    new RemoveAdmin(),
+    new Online(),
+    new Offline()
 ];
 
 sortCommands();
@@ -256,30 +271,29 @@ async function fillMemoryCache() {
 
     const chats = await CacheStorage.chats.get();
     const users = await CacheStorage.users.get();
-    const admins = await CacheStorage.admins.get();
+    // const admins = await cacheStorage.admins.get();
 
     chats.forEach(c => MemoryCache.appendChat(c));
     users.forEach(u => MemoryCache.appendUser(u));
-    admins.forEach(a => MemoryCache.appendAdmin(a));
+    // admins.forEach(a => MemoryCache.appendAdmin(a));
 }
 
 async function updateChats(): Promise<void> {
     return new Promise((async (resolve) => {
-        const chats = await CacheStorage.chats.get();
+            const chats = await CacheStorage.chats.get();
 
-        let chatIds: string = null;
+            if (chats.length == 0) {
+                resolve();
+                return;
+            }
 
-        if (chats.length == 0) {
-            resolve();
-            return;
-        } else {
-            chatIds = `${chats[0].peerId}`;
-            for (let i = 1; i < chats.length; i++) chatIds += `,${chats[i].peerId}`;
+            const chatsIds: number[] = [];
+            chats.forEach(chat => chatsIds.push(chat.peerId));
 
-            await LoadManager.chats.load(chatIds);
+            await LoadManager.chats.load(chatsIds);
             await fillMemoryCache();
 
             console.log(`${TAG}: cached chats updated`);
         }
-    }));
+    ));
 }

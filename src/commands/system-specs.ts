@@ -22,7 +22,8 @@ export class SystemSpecs extends Command {
 
         const totalRam = memoryInfo.total / Math.pow(2, 30);
 
-        const text = `OS: ${osInfo.distro}
+        const text = `NodeJS ${process.version}
+                  OS: ${osInfo.distro}
                   CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
                   RAM: ${totalRam} GB`;
 

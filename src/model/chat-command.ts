@@ -1,6 +1,7 @@
 import {MessageContext, MessageForwardsCollection} from 'vk-io';
 
 export class Command {
+
     regexp: RegExp;
     title: string;
     name?: string;

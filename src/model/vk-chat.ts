@@ -1,4 +1,6 @@
-export class Chat {
+import {VkUser} from './vk-user';
+
+export class VkChat {
     peerId: number = -1;
     type: string = '';
     localId: number = -1;
@@ -6,7 +8,8 @@ export class Chat {
     isAllowed: boolean = true;
     membersCount: number = 0;
     admins: number[] = [];
-    users: number[] = [];
+    usersIds: number[] = [];
+    users: VkUser[] = [];
 
     constructor(json = null) {
         if (json) {
@@ -31,18 +34,18 @@ export class Chat {
         }
     }
 
-    static parse(array): Chat[] {
-        const chats: Chat[] = [];
+    static parse(array): VkChat[] {
+        const chats: VkChat[] = [];
 
         for (let i = 0; i < array.length; i++) {
-            chats.push(new Chat(array[i]));
+            chats.push(new VkChat(array[i]));
         }
 
         return chats;
     }
 
     getUsers(): string {
-        return this.users.toString();
+        return this.usersIds.toString();
     }
 
     getAdminIds(): string {

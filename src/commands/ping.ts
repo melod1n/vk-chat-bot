@@ -7,15 +7,15 @@ export class Ping extends Command {
     description = 'bot\'s ping';
 
     async execute(context) {
-        let startTime = new Date().getMilliseconds();
+        let startTime = Date.now();
 
         await Api.sendMessage(context, 'pong');
 
-        const nowMillis = new Date().getMilliseconds();
+        const nowMillis = Date.now();
 
         const change = Math.abs(nowMillis - startTime);
 
-        await Api.sendMessage(context, `ping: ${change} ms`);
+        await Api.sendMessage(context, `ping: ~${change} ms`);
     }
 
 
