@@ -2,6 +2,8 @@ import {Loader} from '../../model/loader';
 import {VkChat} from '../../model/vk-chat';
 import {vk} from '../../index';
 import {VkUser} from '../../model/vk-user';
+import {CacheStorage} from '../../database/cache-storage';
+import {MemoryCache} from '../../database/memory-cache';
 
 export class ChatsLoader extends Loader<VkChat> {
 
@@ -25,8 +27,8 @@ export class ChatsLoader extends Loader<VkChat> {
 
                     const jsonMembers = await vk.api.call('messages.getConversationMembers',
                         {
-                            peer_id: chat.peerId,
-                            fields: 'photo200, online,online_mobile,online_info, sex'
+                            peer_id: chat.id,
+                            fields: 'photo200, online, online_mobile, online_info, sex'
                         }
                     );
 
@@ -44,10 +46,13 @@ export class ChatsLoader extends Loader<VkChat> {
 
                 resolve(chats);
 
-                // const usersPromise = this.cacheStorage.users.store(users);
-                // const chatsPromise = this.cacheStorage.chats.store(chats);
+                chats.forEach(chat => MemoryCache.appendChat(chat));
+                users.forEach(user => MemoryCache.appendUser(user));
 
-                // await Promise.all([usersPromise, chatsPromise]);
+                const usersPromise = CacheStorage.users.store(users);
+                const chatsPromise = CacheStorage.chats.store(chats);
+
+                await Promise.all([usersPromise, chatsPromise]);
             } catch (e) {
                 reject(e);
             }

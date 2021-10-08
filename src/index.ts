@@ -8,7 +8,6 @@ import {StorageManager} from './database/storage-manager';
 import {Api} from './api/api';
 import {Help} from './commands/help';
 import {About} from './commands/about';
-import {Admins} from './commands/admins';
 import {Kick} from './commands/kick';
 import {LoadUser} from './commands/load-user';
 import {Ping} from './commands/ping';
@@ -19,9 +18,8 @@ import {Shutdown} from './commands/shutdown';
 import {Stats} from './commands/stats';
 import {SystemSpecs} from './commands/system-specs';
 import {Test} from './commands/test';
-import {Title} from './commands/title';
+import {Title, UserTitle} from './commands/title';
 import {Uptime} from './commands/uptime';
-import {UserTitle} from './commands/user-title';
 import {WhatBetter} from './commands/what-better';
 import {When} from './commands/when';
 import {Who} from './commands/who';
@@ -30,20 +28,23 @@ import {CacheStorage} from './database/cache-storage';
 import {LoadManager} from './api/load-manager';
 import * as dotenv from 'dotenv';
 import {JsonRequest} from './commands/json-request';
-import {AddAdmin} from './commands/add-admin';
 import {MemoryCache} from './database/memory-cache';
-import {RemoveAdmin} from './commands/remove-admin';
 import {Online} from './commands/online';
 import {Offline} from './commands/offline';
+import {AdminAdd, AdminRemove, AdminsList} from './commands/admins';
+import {NoteAdd} from './commands/notes';
+import {DatabaseManager, setDatabase} from './database/database-manager';
+import {open} from 'sqlite';
+import sqlite3 from 'sqlite3';
 
 export const AppContainer = new Container();
 InjectManager.init();
 
+// export const databaseManager = new DatabaseManager();
 
 dotenv.config();
 
-
-export const creatorId = parseInt(process.env['CREATOR_ID']);
+export const creatorId = Number(process.env['CREATOR_ID']);
 export let currentGroupId: number = -1;
 
 export const TAG = '[VKBot]';
@@ -53,88 +54,82 @@ export let vk = new VK({
     token: process.env['TOKEN']
 });
 
-setup().then();
-
-//for /ae command
+//for /ae command   
 globalThis.vk = vk;
 globalThis.cache = CacheStorage;
 globalThis.memory = MemoryCache;
 globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
 
+(async () => {
+    const retrieveGroupId = vk.api.groups.getById({});
+    const setupPromise = setup();
 
-vk.api.groups.getById({}).catch(console.error).then((r) => {
-    //@ts-ignore
-    currentGroupId = r[0].id;
-    globalThis.id = currentGroupId;
-});
+    const data = await Promise.all([retrieveGroupId, setupPromise]);
+    currentGroupId = data[0][0].id;
+})();
 
 vk.updates.on('message_new', async (context) => {
     if (context.isOutbox) return;
 
-    try {
-        const cmd = await searchCommand(context);
-        if (cmd) {
-            const requirements = cmd.requirements;
+    const cmd = await searchCommand(context);
+    if (!cmd) return;
 
-            if (requirements.creatorOnly && context.senderId !== creatorId) {
-                console.log(`${cmd.name || cmd.title}: creatorId is bad`);
-                await context.reply('Вы не являетесь создателем бота.');
-                return;
-            }
+    const requirements = cmd.requirements;
 
-            if (requirements.requireAdmin && (!MemoryCache.admins.includes(context.senderId) &&
-                context.senderId !== creatorId)) {
-                console.log(`${cmd.name || cmd.title}: adminId is bad`);
-                await context.reply('Вы не являетесь администратором бота.');
-                return;
-            }
-
-            if (requirements.requireChatAdmin && context.isChat) {
-                let chat = await CacheStorage.chats.getSingle(context.peerId);
-                if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
-
-                if (!chat.admins.includes(-Math.abs(currentGroupId))) {
-                    console.log(`${cmd.name || cmd.title}: chatAdminId is bad`);
-                    await context.reply('Бот не является администратором чата.');
-                    return;
-                }
-            }
-
-            if (requirements.requireChat && !context.isChat) {
-                console.log(`${cmd.name || cmd.title}: chatId is bad`);
-                await context.reply('Тут Вам не чат.');
-                return;
-            }
-
-            if (requirements.requireForwards && !context.hasForwards) {
-                console.log(`${cmd.name || cmd.title}: forwards is bad`);
-                await context.reply('Отсутствуют пересланные сообщения.');
-                return;
-            }
-
-            if (requirements.requireReply && !context.hasReplyMessage) {
-                console.log(`${cmd.name || cmd.title}: replyMessage is bad`);
-                await context.reply('Отсутствует ответ на сообщение.');
-                return;
-            }
-
-            await cmd.execute(
-                context,
-                context.text.match(cmd.regexp),
-                context.forwards,
-                context.replyMessage
-            );
-        }
-
-        const increasePromise = StorageManager.increaseReceivedMessagesCount();
-        const checkChatPromise = CacheStorage.chats.checkIfStored(context.peerId);
-        const checkUserPromise = CacheStorage.users.checkIfStored(context.senderId);
-
-        await Promise.all([increasePromise, checkChatPromise, checkUserPromise]);
-    } catch (e) {
-        console.log(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
+    if (requirements.requireBotCreator && context.senderId !== creatorId) {
+        console.log(`${cmd.title}: creatorId is bad`);
+        await context.reply('Вы не являетесь создателем бота.');
+        return;
     }
+
+    if (requirements.requireBotAdmin && (!MemoryCache.includesAdmin(context.senderId) && context.senderId !== creatorId)) {
+        console.log(`${cmd.title}: adminId is bad`);
+        await context.reply('Вы не являетесь администратором бота.');
+        return;
+    }
+
+    if (requirements.requireChatAdmin && context.isChat) {
+        let chat = await CacheStorage.chats.getSingle(context.peerId);
+        if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
+
+        if (!chat.admins.includes(-Math.abs(currentGroupId))) {
+            console.log(`${cmd.title}: chatAdminId is bad`);
+            await context.reply('Бот не является администратором чата.');
+            return;
+        }
+    }
+
+    if (requirements.requireChat && !context.isChat) {
+        console.log(`${cmd.title}: chatId is bad`);
+        await context.reply('Тут Вам не чат.');
+        return;
+    }
+
+    if (requirements.requireForwards && !context.hasForwards) {
+        console.log(`${cmd.title}: forwards is bad`);
+        await context.reply('Отсутствуют пересланные сообщения.');
+        return;
+    }
+
+    if (requirements.requireReply && !context.hasReplyMessage) {
+        console.log(`${cmd.title}: replyMessage is bad`);
+        await context.reply('Отсутствует ответ на сообщение.');
+        return;
+    }
+
+    const executeCommandPromise = cmd.execute(
+        context,
+        context.text.match(cmd.regexp),
+        context.forwards,
+        context.replyMessage
+    );
+
+    const increasePromise = StorageManager.increaseReceivedMessagesCount();
+    const loadChatPromise = LoadManager.chats.loadSingle(context.peerId);
+    const loadUserPromise = LoadManager.users.loadSingle(context.senderId);
+
+    await Promise.all([executeCommandPromise, increasePromise, loadChatPromise, loadUserPromise]);
 });
 
 vk.updates.on(['chat_invite_user', 'chat_invite_user_by_link'], async (context) => {
@@ -156,7 +151,7 @@ class Ae extends Command {
     name = '/ae';
     description = 'js eval';
 
-    requirements = Requirements.builder().apply(true);
+    requirements = Requirements.Build().apply(true);
 
     async execute(context, params, fwd, reply) {
         const match = params[1];
@@ -180,12 +175,13 @@ class Ae extends Command {
             await Api.sendMessage(context, text);
         }
     }
-
 }
 
 export let commands: Command[] = [
     new About(),
-    new Admins(),
+    new AdminsList(),
+    new AdminAdd(),
+    new AdminRemove(),
     new Bat(),
     new Ae(),
     new Help(),
@@ -200,16 +196,15 @@ export let commands: Command[] = [
     new SystemSpecs(),
     new Test(),
     new Title(),
-    new Uptime(),
     new UserTitle(),
+    new Uptime(),
     new WhatBetter(),
     new When(),
     new Who(),
     new JsonRequest(),
-    new AddAdmin(),
-    new RemoveAdmin(),
     new Online(),
-    new Offline()
+    new Offline(),
+    new NoteAdd()
 ];
 
 sortCommands();
@@ -254,11 +249,16 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
 }
 
 async function setup() {
-    process.on('uncaughtException', (e) => {
-        const errorText = Utils.getExceptionText(e);
+    const db = await open({driver: sqlite3.Database, filename: 'data/database.sqlite'});
+    setDatabase(db);
+    await (new DatabaseManager(db)).init();
+    // await databaseManager.init();
 
-        console.error(`${TAG_ERROR}: ${errorText}`);
-    });
+    // process.on('uncaughtException', (e) => {
+    //     const errorText = Utils.getExceptionText(e);
+    //
+    //     console.error(`${TAG_ERROR}: ${errorText}`);
+    // });
 
     await Promise.all([
         fillMemoryCache(),
@@ -269,13 +269,15 @@ async function setup() {
 async function fillMemoryCache() {
     MemoryCache.clear();
 
-    const chats = await CacheStorage.chats.get();
-    const users = await CacheStorage.users.get();
-    // const admins = await cacheStorage.admins.get();
+    const chatsPromise = CacheStorage.chats.get();
+    const usersPromise = CacheStorage.users.get();
+    const adminsPromise = CacheStorage.admins.get();
 
-    chats.forEach(c => MemoryCache.appendChat(c));
-    users.forEach(u => MemoryCache.appendUser(u));
-    // admins.forEach(a => MemoryCache.appendAdmin(a));
+    const data = await Promise.all([chatsPromise, usersPromise, adminsPromise]);
+
+    data[0].forEach(c => MemoryCache.appendChat(c));
+    data[1].forEach(u => MemoryCache.appendUser(u));
+    data[2].forEach(a => MemoryCache.appendAdmin(a));
 }
 
 async function updateChats(): Promise<void> {
@@ -288,7 +290,7 @@ async function updateChats(): Promise<void> {
             }
 
             const chatsIds: number[] = [];
-            chats.forEach(chat => chatsIds.push(chat.peerId));
+            chats.forEach(chat => chatsIds.push(chat.id));
 
             await LoadManager.chats.load(chatsIds);
             await fillMemoryCache();

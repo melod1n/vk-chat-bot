@@ -8,7 +8,7 @@ export class Kick extends Command {
     name = '/kick';
     description = 'kicks user from chat';
 
-    requirements = Requirements.builder().apply(false, true, true, true, false, true);
+    requirements = Requirements.Build().apply(false, true, true, true, false, true);
 
     async execute(context) {
         const message = await LoadManager.messages.loadByConversationMessageId(

@@ -1,74 +1,56 @@
 import {VkUser} from '../../model/vk-user';
 import {Storage} from '../../model/storage';
-import {LoadManager} from '../../api/load-manager';
 import {MemoryCache} from '../memory-cache';
 
 export class UsersStorage extends Storage<VkUser> {
 
-    async checkIfStored(userId: number): Promise<boolean> {
-        if (isNaN(userId) || userId < 0) return;
+    tableName = 'users';
 
-        const users = await this.get();
-        let stored = false;
+    async get(ids?: number[]): Promise<VkUser[]> {
+        return new Promise(async (resolve, reject) => {
+                const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
 
-        for (const user of users) {
-            if (user.id == userId) {
-                stored = true;
-                break;
-            }
-        }
+                if (ids) {
+                    let value: VkUser = null;
 
-        if (!stored) LoadManager.users.loadSingle(userId).then();
-    }
+                    this.database().each(query, [ids], (error, row) => {
+                        value = this.fill(row);
+                    }, (error) => {
+                        if (error) reject(error);
+                        else resolve([value]);
+                    });
+                } else {
+                    let values: VkUser[] = [];
 
-    async get(usersIds?: number[]): Promise<VkUser[]> {
-        return new Promise((resolve, reject) => {
-            this.database.serialize(() => {
-                    const query = 'select * from users' + (usersIds ? ' where peerId = (?)' : '');
+                    await this.database().each(query, (error, row) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
 
-                    if (usersIds) {
-                        let user: VkUser = null;
+                        values.push(this.fill(row));
+                    });
 
-                        this.database.each(query, [usersIds], (error, row) => {
-                            user = this.fill(row);
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve([user]);
-                        });
-                    } else {
-                        let users: VkUser[] = [];
-
-                        this.database.each(query, (error, row) => {
-                            users.push(this.fill(row));
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve(users);
-                        });
-                    }
+                    resolve(values);
                 }
-            );
-        });
+            }
+        );
     }
 
-    async getSingle(userId: number): Promise<VkUser> {
-        return new Promise((resolve, reject) => this.get([userId]).then(users => resolve(users[0])).catch(reject));
+    async getSingle(id: number): Promise<VkUser | null> {
+        return new Promise((resolve, reject) => this.get([id]).then(values => resolve(values[0])).catch(reject));
     }
 
     async store(values: VkUser[]): Promise<void> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
-                if (!MemoryCache.includesUser(value)) {
-                    MemoryCache.appendUser(value);
-
-                    this.database.serialize(() => {
-                        this.database.prepare('insert into users values (?, ?, ?, ?, ?)',
-                            [value.id, value.firstName, value.lastName, value.isClosed, value.photo200],
-                            (error) => {
-                                if (error) reject(error);
-                                else resolve();
-                            });
+                MemoryCache.appendUser(value);
+                this.database().run(`insert into ${this.tableName} values (?, ?, ?, ?, ?)`,
+                    [value.id, value.firstName, value.lastName, value.isClosed, value.photo200],
+                    (error) => {
+                        if (error) reject(error);
+                        else resolve();
                     });
-                }
             });
         });
     }
@@ -77,17 +59,17 @@ export class UsersStorage extends Storage<VkUser> {
         return this.store([value]);
     }
 
-    async delete(usersIds: number[]): Promise<void> {
-        if (usersIds.length == 0) return;
+    async delete(ids: number[]): Promise<void> {
+        if (ids.length == 0) return;
         return new Promise((resolve, reject) => {
 
-            let query = `delete from users where userId = ${usersIds[0]}`;
-            for (let i = 1; i < usersIds.length; i++) {
+            let query = `delete from ${this.tableName} where id = ${ids[0]}`;
+            for (let i = 1; i < ids.length; i++) {
                 query += ' or ';
-                query += `userId = ${usersIds[i]}`;
+                query += `id = ${ids[i]}`;
             }
-            this.database.serialize(() => {
-                this.database.run(query, [], (e) => {
+            this.database().serialize(() => {
+                this.database().run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -95,14 +77,14 @@ export class UsersStorage extends Storage<VkUser> {
         });
     }
 
-    async deleteSingle(userId: number): Promise<void> {
-        return this.delete([userId]);
+    async deleteSingle(id: number): Promise<void> {
+        return this.delete([id]);
     }
 
     async clear(): Promise<void> {
         return new Promise((resolve) => {
-            this.database.serialize(() => {
-                this.database.run('delete from users');
+            this.database().serialize(() => {
+                this.database().run(`delete from ${this.tableName}`);
                 resolve();
             });
         });
@@ -111,7 +93,7 @@ export class UsersStorage extends Storage<VkUser> {
     fill(row: any): VkUser {
         const user = new VkUser();
 
-        user.id = row.userId;
+        user.id = row.id;
         user.firstName = row.firstName;
         user.lastName = row.lastName;
         user.isClosed = row.isClosed;

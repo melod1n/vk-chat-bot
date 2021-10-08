@@ -2,6 +2,7 @@ import {Loader} from '../../model/loader';
 import {VkUser} from '../../model/vk-user';
 import {vk} from '../../index';
 import {CacheStorage} from '../../database/cache-storage';
+import {MemoryCache} from '../../database/memory-cache';
 
 export class UsersLoader extends Loader<VkUser> {
 
@@ -16,13 +17,16 @@ export class UsersLoader extends Loader<VkUser> {
                 const users = VkUser.parse(r);
                 resolve(users);
 
+                users.forEach(user => MemoryCache.appendUser(user));
+
                 await CacheStorage.users.store(users);
             });
         });
     }
 
-    async loadSingle(params: any): Promise<VkUser> {
-        return Promise.resolve(undefined);
+    async loadSingle(userId: number): Promise<VkUser> {
+        if (isFinite(userId)) return null;
+        return new Promise((resolve, reject) => this.load([userId]).then(users => resolve(users[0])).catch(reject));
     }
 
 }

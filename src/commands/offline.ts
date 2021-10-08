@@ -8,7 +8,7 @@ export class Offline extends Command {
     name = '/offline';
     description = 'offline users';
 
-    requirements = Requirements.builder().apply(false, false, false, true);
+    requirements = Requirements.Build().apply(false, false, false, true);
 
     async execute(context): Promise<void> {
         let users = (await LoadManager.chats.loadSingle(context.peerId)).users;

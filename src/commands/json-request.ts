@@ -9,7 +9,7 @@ export class JsonRequest extends Command {
     title = '/json';
     description = 'retrieved json from url';
 
-    requirements = Requirements.builder().apply(false, true, false, false, false, false);
+    requirements = Requirements.Build().apply(false, true, false, false, false, false);
 
     async execute(context, params) {
         let url = params[1];

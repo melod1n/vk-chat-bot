@@ -7,7 +7,7 @@ export class Reboot extends Command {
     title = '/reboot';
     description = 'reboots bot\'s os (if windows) in 5 seconds';
 
-    requirements = Requirements.builder().apply(true);
+    requirements = Requirements.Build().apply(true);
 
     async execute(context) {
         await Api.sendMessage(context, 'пк будет перезагружен через 5 секунд');

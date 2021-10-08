@@ -1,6 +1,6 @@
 {
-  "sendActionMessage": true,
+  "messagesReceived": 696,
+  "messagesSent": 377,
   "testAnswer": true,
-  "messagesReceived": 0,
-  "messagesSent": 0
+  "sendActionMessage": true
 }

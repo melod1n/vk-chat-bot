@@ -1,4 +1,6 @@
 import {Command, Requirements} from '../model/chat-command';
+import {LoadManager} from '../api/load-manager';
+import {Api} from '../api/api';
 
 export class LoadUser extends Command {
     regexp = /^\/loaduser\s(\d+)/i;
@@ -6,10 +8,14 @@ export class LoadUser extends Command {
     name = '/loadUser';
     description = 'user from vk api by it\'s id';
 
-    requirements = Requirements.builder().apply(false, true);
+    requirements = Requirements.Build().apply(false, true);
 
     async execute(context, params) {
-        // await Api.sendMessage(context, JSON.stringify(await LoadManager.users.load(`${parseInt(params[1])}`)));
+        try {
+            const user = await LoadManager.users.loadSingle(Number(params[1]));
+            await Api.sendMessage(context, JSON.stringify(user));
+        } catch (e) {
+            await Api.sendMessage(context, 'Произошла ошибка.');
+        }
     }
-
 }

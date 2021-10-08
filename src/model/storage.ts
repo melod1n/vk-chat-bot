@@ -1,15 +1,9 @@
-import {AppDatabase} from '../database/database-manager';
 import {Database} from 'sqlite3';
+import {database} from '../database/database-manager';
 
 export abstract class Storage<T> {
 
-    protected database: Database;
-
-    constructor() {
-        this.database = AppDatabase;
-    }
-
-    abstract checkIfStored(params?: any): Promise<boolean>;
+    protected abstract tableName: string;
 
     abstract get(params?: any): Promise<T[]>;
 
@@ -26,5 +20,9 @@ export abstract class Storage<T> {
     abstract clear(): Promise<void>;
 
     abstract fill(row: any): T;
+
+    protected database(): Database {
+        return database;
+    }
 
 }

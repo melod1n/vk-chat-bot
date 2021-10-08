@@ -7,7 +7,7 @@ export class Shutdown extends Command {
     title = '/shutdown';
     description = 'shutdowns bot\'s os (if windows) in 5 seconds';
 
-    requirements = Requirements.builder().apply(true);
+    requirements = Requirements.Build().apply(true);
 
     async execute(context) {
         await Api.sendMessage(context, 'пк будет выключен через 5 секунд');

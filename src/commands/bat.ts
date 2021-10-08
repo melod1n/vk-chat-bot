@@ -8,7 +8,7 @@ export class Bat extends Command {
     name = '/bat';
     description = 'executed value in cmd';
 
-    requirements = Requirements.builder().apply(true);
+    requirements = Requirements.Build().apply(true);
 
     async execute(context, params) {
         const text = params[1];

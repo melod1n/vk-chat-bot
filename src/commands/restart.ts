@@ -8,7 +8,7 @@ export class Restart extends Command {
     name = '/restart';
     description = 'restarts bot';
 
-    requirements = Requirements.builder().apply(true);
+    requirements = Requirements.Build().apply(true);
 
     async execute(context): Promise<void> {
         await Promise.all([

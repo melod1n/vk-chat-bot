@@ -9,7 +9,7 @@ export class Online extends Command {
     name = '/online';
     description = 'users who online';
 
-    requirements = Requirements.builder().apply(false, false, false, true);
+    requirements = Requirements.Build().apply(false, false, false, true);
 
     async execute(context): Promise<void> {
         let users = (await LoadManager.chats.loadSingle(context.peerId)).users;

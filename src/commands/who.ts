@@ -10,7 +10,7 @@ export class Who extends Command {
     title = '/who [value]';
     description = 'random people from chat\'s participants (only users)';
 
-    requirements = Requirements.builder().apply(false, false, true, true, false, false);
+    requirements = Requirements.Build().apply(false, false, true, true, false, false);
 
     async execute(context) {
         let chat = await CacheStorage.chats.getSingle(context.peerId);

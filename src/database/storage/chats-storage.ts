@@ -1,81 +1,64 @@
 import {Storage} from '../../model/storage';
 import {VkChat} from '../../model/vk-chat';
-import {injectable} from 'inversify';
-import {MemoryCache} from '../memory-cache';
 
-@injectable()
 export class ChatsStorage extends Storage<VkChat> {
 
-    async checkIfStored(peerId: number): Promise<boolean> {
+    tableName = 'chats';
+
+    async get(ids?: number[]): Promise<VkChat[]> {
         return new Promise(async (resolve, reject) => {
-            try {
-                const chats = await this.get();
-                let stored = false;
+                const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
 
-                for (const chat of chats) {
-                    if (chat.peerId == peerId) {
-                        stored = true;
-                        break;
-                    }
+                if (ids) {
+                    let value: VkChat = null;
+
+                    this.database().each(query, [ids], (error, row) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        value = this.fill(row);
+                    }, (error) => {
+                        if (error) reject(error);
+                        else resolve([value]);
+                    });
+                } else {
+                    let values: VkChat[] = [];
+
+                    await this.database().each(query, (error, row) => {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        values.push(this.fill(row));
+                    });
+
+                    resolve(values);
                 }
-
-                resolve(stored);
-            } catch (e) {
-                reject(e);
             }
-        });
+        );
 
     }
 
-    async get(peersIds?: number[]): Promise<VkChat[]> {
-        return new Promise((resolve, reject) => {
-            this.database.serialize(() => {
-                    const query = 'select * from chats' + (peersIds ? ' where peerId = (?)' : '');
-
-                    if (peersIds) {
-                        let chat: VkChat = null;
-
-                        this.database.each(query, [peersIds], (error, row) => {
-                            chat = this.fill(row);
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve([chat]);
-                        });
-                    } else {
-                        let chats: VkChat[] = [];
-
-                        this.database.each(query, (error, row) => {
-                            chats.push(this.fill(row));
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve(chats);
-                        });
-                    }
-                }
-            );
-        });
-    }
-
-    async getSingle(peerId: number): Promise<VkChat> {
-        return new Promise((resolve, reject) => this.get([peerId]).then(chats => resolve(chats[0])).catch(reject));
+    async getSingle(id: number): Promise<VkChat | null> {
+        return new Promise((resolve, reject) => this.get([id]).then(values => resolve(values[0])).catch(reject));
     }
 
     async store(values: VkChat[]): Promise<void> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
-                if (!MemoryCache.includesChat(value)) {
-                    MemoryCache.appendChat(value);
-                    this.database.serialize(() => {
-                        this.database.prepare('insert into chats values (?, ?, ?, ?, ?, ?, ?, ?)',
-                            [value.peerId, value.type, value.localId, value.title, value.isAllowed,
-                                value.membersCount, value.getAdminIds(), value.getUsers()],
-                            (error) => {
-                                if (error) reject(error);
-                                else resolve();
-                            }
-                        );
-                    });
-                }
+                this.database().serialize(() => {
+                    this.database().run(`insert into ${this.tableName} values (?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [value.id, value.type, value.localId, value.title, value.isAllowed,
+                            value.membersCount, value.getAdminIds(), value.getUsers()],
+                        (error) => {
+                            if (error) reject(error);
+                            else resolve();
+                        }
+                    );
+                });
             });
         });
     }
@@ -84,17 +67,17 @@ export class ChatsStorage extends Storage<VkChat> {
         return this.store([value]);
     }
 
-    async delete(peersIds: number[]): Promise<void> {
-        if (peersIds.length == 0) return;
+    async delete(ids: number[]): Promise<void> {
+        if (ids.length == 0) return;
         return new Promise((resolve, reject) => {
 
-            let query = `delete from chats where peerId = ${peersIds[0]}`;
-            for (let i = 1; i < peersIds.length; i++) {
+            let query = `delete from ${this.tableName} where id = ${ids[0]}`;
+            for (let i = 1; i < ids.length; i++) {
                 query += ' or ';
-                query += `peerId = ${peersIds[i]}`;
+                query += `id = ${ids[i]}`;
             }
-            this.database.serialize(() => {
-                this.database.run(query, [], (e) => {
+            this.database().serialize(() => {
+                this.database().run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -102,14 +85,14 @@ export class ChatsStorage extends Storage<VkChat> {
         });
     }
 
-    async deleteSingle(chatId: number): Promise<void> {
-        return this.delete([chatId]);
+    async deleteSingle(id: number): Promise<void> {
+        return this.delete([id]);
     }
 
     async clear(): Promise<void> {
         return new Promise((resolve) => {
-            this.database.serialize(() => {
-                this.database.run('delete from chats');
+            this.database().serialize(() => {
+                this.database().run(`delete from ${this.tableName}`);
                 resolve();
             });
         });
@@ -118,7 +101,7 @@ export class ChatsStorage extends Storage<VkChat> {
     fill(row: any): VkChat {
         const chat = new VkChat();
 
-        chat.peerId = row.peerId;
+        chat.id = row.id;
         chat.localId = row.localId;
         chat.isAllowed = row.isAllowed;
         chat.membersCount = row.membersCount;

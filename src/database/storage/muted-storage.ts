@@ -2,6 +2,8 @@ import {Storage} from '../../model/storage';
 
 export class MutedStorage extends Storage<number> {
 
+    tableName = 'muted';
+
     checkIfStored(params: any): Promise<boolean> {
         return Promise.resolve(false);
     }

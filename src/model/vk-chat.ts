@@ -1,7 +1,7 @@
 import {VkUser} from './vk-user';
 
 export class VkChat {
-    peerId: number = -1;
+    id: number = -1;
     type: string = '';
     localId: number = -1;
     title: string = '';
@@ -15,7 +15,7 @@ export class VkChat {
         if (json) {
             const peer = json.peer;
             if (peer) {
-                this.peerId = peer.id;
+                this.id = peer.id;
                 this.type = peer.type;
                 this.localId = peer.local_id;
             }
