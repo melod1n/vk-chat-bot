@@ -55,27 +55,31 @@ export class NotesStorage extends Storage<Note> {
 
     get(ids?: number[]): Promise<Note[]> {
         return new Promise((resolve, reject) => {
-            this.database().serialize(() => {
+            this.database().serialize(async () => {
                     const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
 
                     if (ids) {
                         let value: Note = null;
 
-                        this.database().each(query, [ids], (error, row) => {
+                        await this.database().each(query, [ids], (error, row) => {
+                            if (error) {
+                                return reject(error);
+                            }
                             value = this.fill(row);
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve([value]);
                         });
+
+                        resolve([value]);
                     } else {
                         let values: Note[] = [];
 
-                        this.database().each(query, (error, row) => {
+                        await this.database().each(query, (error, row) => {
+                            if (error) {
+                                return reject(error);
+                            }
                             values.push(this.fill(row));
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve(values);
                         });
+
+                        resolve(values);
                     }
                 }
             );

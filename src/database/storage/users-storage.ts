@@ -13,12 +13,14 @@ export class UsersStorage extends Storage<VkUser> {
                 if (ids) {
                     let value: VkUser = null;
 
-                    this.database().each(query, [ids], (error, row) => {
+                    await this.database().each(query, [ids], (error, row) => {
+                        if (error) {
+                            return reject(error);
+                        }
                         value = this.fill(row);
-                    }, (error) => {
-                        if (error) reject(error);
-                        else resolve([value]);
                     });
+
+                    resolve([value]);
                 } else {
                     let values: VkUser[] = [];
 

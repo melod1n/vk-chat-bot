@@ -12,17 +12,17 @@ export class ChatsStorage extends Storage<VkChat> {
                 if (ids) {
                     let value: VkChat = null;
 
-                    this.database().each(query, [ids], (error, row) => {
+                    await this.database().each(query, [ids], (error, row) => {
+                        console.log('chat: ' + row);
                         if (error) {
                             reject(error);
                             return;
                         }
 
                         value = this.fill(row);
-                    }, (error) => {
-                        if (error) reject(error);
-                        else resolve([value]);
                     });
+
+                    resolve([value]);
                 } else {
                     let values: VkChat[] = [];
 

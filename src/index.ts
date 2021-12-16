@@ -36,6 +36,7 @@ import {NoteAdd} from './commands/notes';
 import {DatabaseManager, setDatabase} from './database/database-manager';
 import {open} from 'sqlite';
 import sqlite3 from 'sqlite3';
+import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
 
 export const AppContainer = new Container();
 InjectManager.init();
@@ -51,8 +52,10 @@ export const TAG = '[VKBot]';
 export const TAG_ERROR = `${TAG} [ERROR]`;
 
 export let vk = new VK({
-    token: process.env['TOKEN']
+    token: process.env['TOKEN'],
 });
+
+console.log(vk.api.options.apiVersion);
 
 //for /ae command   
 globalThis.vk = vk;
@@ -62,12 +65,26 @@ globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
 
 (async () => {
-    const retrieveGroupId = vk.api.groups.getById({});
+    const retrieveGroupId = vk.api.call('groups.getById', {});
     const setupPromise = setup();
 
     const data = await Promise.all([retrieveGroupId, setupPromise]);
-    currentGroupId = data[0][0].id;
+
+    const groupIdResponse: GroupsGroupFull[] = data[0];
+    currentGroupId = groupIdResponse[0].id;
+
+    setInterval(async () => {
+
+        await updateGroupDescription();
+    }, 5000 * 60);
 })();
+
+async function updateGroupDescription() {
+    await vk.api.call('groups.edit', {
+        group_id: currentGroupId,
+        description: `Last update: ${new Date()}`
+    }).catch(console.error);
+}
 
 vk.updates.on('message_new', async (context) => {
     if (context.isOutbox) return;

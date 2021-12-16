@@ -28,7 +28,7 @@ export class ChatsLoader extends Loader<VkChat> {
                     const jsonMembers = await vk.api.call('messages.getConversationMembers',
                         {
                             peer_id: chat.id,
-                            fields: 'photo200, online, online_mobile, online_info, sex'
+                            fields: 'photo_100,photo_200,online,online_mobile,online_info,sex'
                         }
                     );
 

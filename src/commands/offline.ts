@@ -11,15 +11,15 @@ export class Offline extends Command {
     requirements = Requirements.Build().apply(false, false, false, true);
 
     async execute(context): Promise<void> {
-        let users = (await LoadManager.chats.loadSingle(context.peerId)).users;
+        const users = (await LoadManager.chats.loadSingle(context.peerId)).users;
         const allCount = users.length;
 
-        users = users.filter((user) => !user.online);
+        const hiddenOnlineUsers = users.filter((user) => !user.onlineVisible);
+        const onlineUsers = users.filter((user) => !user.online);
 
+        let text = `Не в сети (${onlineUsers.length}/${allCount})\n`;
 
-        let text = `Не в сети (${users.length}/${allCount})\n`;
-
-        for (const user of users) {
+        for (const user of onlineUsers) {
             const sexIcon = `${user.sex == 0 ? '👽' : user.sex == 1 ? '🚺' : '🚹'}`;
             const platform = user.onlineMobile ? '📱' : '💻';
             const name = `@id${user.id}(${user.firstName} ${user.lastName})`;
@@ -29,7 +29,10 @@ export class Offline extends Command {
             text += `${sexIcon} ${platform} ${name} ${time === '' ? '' : sex} ${time}\n`;
         }
 
-        if (users.length == 0) text = 'Все онлайн 😀';
+        if (onlineUsers.length == 0) text = 'Все онлайн 😀';
+        if (hiddenOnlineUsers.length > 0) {
+            text += `\n(Пользователей, скрывших онлайн: ${hiddenOnlineUsers.length})`;
+        }
 
         await Api.sendMessage(context, text, true);
     }

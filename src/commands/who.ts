@@ -13,7 +13,7 @@ export class Who extends Command {
     requirements = Requirements.Build().apply(false, false, true, true, false, false);
 
     async execute(context) {
-        let chat = await CacheStorage.chats.getSingle(context.peerId);
+        let chat = await CacheStorage.chats.getSingle(context.peerId).catch(console.error);
         if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
         const userId = chat.usersIds[Utils.getRandomInt(chat.usersIds.length)];
