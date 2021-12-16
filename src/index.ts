@@ -107,7 +107,7 @@ vk.updates.on('message_new', async (context) => {
     }
 
     if (requirements.requireChatAdmin && context.isChat) {
-        let chat = await CacheStorage.chats.getSingle(context.peerId);
+        let chat = await MemoryCache.getChat(context.peerId);
         if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
         if (!chat.admins.includes(-Math.abs(currentGroupId))) {

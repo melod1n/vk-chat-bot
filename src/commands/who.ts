@@ -4,6 +4,7 @@ import {Utils} from '../util/utils';
 import {Api} from '../api/api';
 import {CacheStorage} from '../database/cache-storage';
 import {StorageManager} from '../database/storage-manager';
+import {MemoryCache} from '../database/memory-cache';
 
 export class Who extends Command {
     regexp = /^\/(who|кто)\s([^]+)/i;
@@ -13,7 +14,7 @@ export class Who extends Command {
     requirements = Requirements.Build().apply(false, false, true, true, false, false);
 
     async execute(context) {
-        let chat = await CacheStorage.chats.getSingle(context.peerId).catch(console.error);
+        let chat = await MemoryCache.getChat(context.peerId);
         if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
         const userId = chat.usersIds[Utils.getRandomInt(chat.usersIds.length)];
@@ -23,7 +24,7 @@ export class Who extends Command {
             return;
         }
 
-        let user = await CacheStorage.users.getSingle(userId);
+        let user = await MemoryCache.getUser(userId);
         if (!user) user = await LoadManager.users.loadSingle(userId);
 
         const text = `@id${userId}(${user.firstName} ${user.lastName})`;
