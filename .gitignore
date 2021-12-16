@@ -85,7 +85,6 @@ typings/
 
 data
 data/answers.json
-data/database.sql
 data/settings.json
 src/index.js
 src/index.js.map
