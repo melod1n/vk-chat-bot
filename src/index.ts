@@ -32,7 +32,6 @@ import {Offline} from './commands/offline';
 import {AdminAdd, AdminRemove, AdminsList} from './commands/admins';
 import {NoteAdd} from './commands/notes';
 import {DatabaseManager, setDatabase} from './database/database-manager';
-import {open} from 'sqlite';
 import sqlite3 from 'sqlite3';
 import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
 

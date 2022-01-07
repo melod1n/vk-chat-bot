@@ -10,7 +10,6 @@
     "node-fetch": "^2.6.1",
     "reflect-metadata": "^0.1.13",
     "sql-template-strings": "^2.2.2",
-    "sqlite": "^4.0.23",
     "sqlite3": "^5.0.2",
     "systeminformation": "^5.6.1",
     "ts-node": "^9.1.1",

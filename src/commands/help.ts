@@ -18,19 +18,15 @@ export class Help extends Command {
                 message: text,
                 random_id: 0
             }).then(async () => {
-                await StorageManager.increaseSentMessagesCount();
                 if (!context.isChat) return;
-                await Api.sendMessage(context, 'Отправил команды в ЛС 😎');
+                await context.reply('Отправил команды в ЛС 😎');
             });
         } catch (e) {
             console.error(`${TAG_ERROR}: help.ts: ${Utils.getExceptionText(e)}`);
             if (e.code == 901) {
-                await Promise.all([
-                    StorageManager.increaseSentMessagesCount(),
-                    context.reply('Разрешите мне писать Вам сообщения 🥺')
-                ]);
+                await context.reply('Разрешите мне писать Вам сообщения 🥺');
             } else {
-                await Api.sendMessage(context, 'Не смог отправить команды в ЛС ☹');
+                await context.reply('Не смог отправить команды в ЛС ☹');
             }
         }
     }
