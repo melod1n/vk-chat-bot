@@ -1,6 +1,5 @@
 import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Utils} from '../util/utils';
-import {Api} from '../api/api';
 
 export class Reboot extends Command {
     regexp = /^\/reboot/i;
@@ -10,7 +9,7 @@ export class Reboot extends Command {
     requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(context) {
-        await Api.sendMessage(context, 'пк будет перезагружен через 5 секунд');
+        await context.sendAudioMessage('пк будет перезагружен через 5 секунд');
 
         await Utils.executeCommand('shutdown /r /c "reboot from vkbot" /t 5').catch(console.error);
     }

@@ -40,8 +40,8 @@ export class NotesStorage extends Storage<Note> {
                 query += ' or ';
                 query += `id = ${ids[i]}`;
             }
-            this.database().serialize(() => {
-                this.database().run(query, [], (e) => {
+            this.database.serialize(() => {
+                this.database.run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -55,13 +55,13 @@ export class NotesStorage extends Storage<Note> {
 
     get(ids?: number[]): Promise<Note[]> {
         return new Promise((resolve, reject) => {
-            this.database().serialize(async () => {
+            this.database.serialize(async () => {
                     const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
 
                     if (ids) {
                         let value: Note = null;
 
-                        await this.database().each(query, [ids], (error, row) => {
+                        await this.database.each(query, [ids], (error, row) => {
                             if (error) {
                                 return reject(error);
                             }
@@ -72,7 +72,7 @@ export class NotesStorage extends Storage<Note> {
                     } else {
                         let values: Note[] = [];
 
-                        await this.database().each(query, (error, row) => {
+                        await this.database.each(query, (error, row) => {
                             if (error) {
                                 return reject(error);
                             }
@@ -98,8 +98,8 @@ export class NotesStorage extends Storage<Note> {
                 if (!MemoryCache.includesNote(value)) {
                     MemoryCache.appendNote(value);
 
-                    this.database().serialize(() => {
-                        this.database().run(`insert into ${this.tableName} (title, content) values(?, ?)`,
+                    this.database.serialize(() => {
+                        this.database.run(`insert into ${this.tableName} (title, content) values(?, ?)`,
                             [value.title, value.content],
                             (error) => {
                                 if (error) reject(error);
@@ -118,8 +118,8 @@ export class NotesStorage extends Storage<Note> {
 
     clear(): Promise<void> {
         return new Promise((resolve) => {
-            this.database().serialize(() => {
-                this.database().run(`delete from ${this.tableName}`);
+            this.database.serialize(() => {
+                this.database.run(`delete from ${this.tableName}`);
                 resolve();
             });
         });

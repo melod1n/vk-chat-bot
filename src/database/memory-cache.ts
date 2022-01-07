@@ -166,6 +166,8 @@ export class MemoryCache {
         return new Promise((resolve, reject) => {
             let found = false;
             for (const storedUser of this.users) {
+                if (!storedUser) continue;
+
                 if (storedUser.id == userId) {
                     found = true;
                     resolve(storedUser);

@@ -31,7 +31,7 @@ import {Online} from './commands/online';
 import {Offline} from './commands/offline';
 import {AdminAdd, AdminRemove, AdminsList} from './commands/admins';
 import {NoteAdd} from './commands/notes';
-import {DatabaseManager, setDatabase} from './database/database-manager';
+import {DatabaseManager} from './database/database-manager';
 import sqlite3 from 'sqlite3';
 import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
 
@@ -57,17 +57,14 @@ globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
 
 (async () => {
-    const retrieveGroupId = await vk.api.call('groups.getById', {});
-
-    const groupIdResponse: GroupsGroupFull[] = retrieveGroupId;
+    const groupIdResponse: GroupsGroupFull[] = await vk.api.call('groups.getById', {});
     currentGroupId = groupIdResponse[0].id;
 
     setInterval(async () => {
-
         await updateGroupDescription();
     }, 5000 * 60);
 
-    await setup();
+    await setupDatabase();
 })();
 
 async function updateGroupDescription() {
@@ -135,11 +132,10 @@ vk.updates.on('message_new', async (context) => {
         context.replyMessage
     );
 
-    const increasePromise = StorageManager.increaseReceivedMessagesCount();
-    const loadChatPromise = null;//LoadManager.chats.loadSingle(context.peerId);
+    const loadChatPromise = LoadManager.chats.loadSingle(context.peerId);
     const loadUserPromise = LoadManager.users.loadSingle(context.senderId);
 
-    await Promise.all([executeCommandPromise, increasePromise, loadChatPromise, loadUserPromise]);
+    await Promise.all([executeCommandPromise, loadChatPromise, loadUserPromise]);
 });
 
 vk.updates.on(['chat_invite_user', 'chat_invite_user_by_link'], async (context) => {
@@ -217,11 +213,7 @@ export let commands: Command[] = [
     new NoteAdd()
 ];
 
-sortCommands();
-
-function sortCommands() {
-    commands.sort(Utils.compareCommands);
-}
+commands.sort(Utils.compareCommands);
 
 async function searchCommand(context?: MessageContext, text?: string): Promise<Command | null> {
     return new Promise<Command>((resolve => {
@@ -237,7 +229,7 @@ async function searchCommand(context?: MessageContext, text?: string): Promise<C
 }
 
 async function sendInviteUserMessage(context: MessageContext): Promise<any> {
-    if (!StorageManager.settings.sendActionMessage || context.eventMemberId < 0) return;
+    if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
         Api.sendMessage(
@@ -248,7 +240,7 @@ async function sendInviteUserMessage(context: MessageContext): Promise<any> {
 }
 
 async function sendKickUserMessage(context: MessageContext): Promise<any> {
-    if (!StorageManager.settings.sendActionMessage || context.eventMemberId < 0) return;
+    if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
         Api.sendMessage(
@@ -258,16 +250,14 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
     });
 }
 
-async function setup() {
+async function setupDatabase() {
     const db = new sqlite3.Database('data/database.sqlite');
-    setDatabase(db);
 
-    await (new DatabaseManager(db)).init();
+    await DatabaseManager.create(db).init();
+    CacheStorage.init();
 
-    await Promise.all([
-        fillMemoryCache(),
-        updateChats()
-    ]);
+    await fillMemoryCache();
+    await updateChats();
 }
 
 async function fillMemoryCache() {
@@ -285,7 +275,7 @@ async function fillMemoryCache() {
 }
 
 async function updateChats(): Promise<void> {
-    return new Promise((async (resolve) => {
+    return new Promise(async (resolve) => {
             const chats = await CacheStorage.chats.get();
 
             if (chats.length == 0) {
@@ -296,10 +286,10 @@ async function updateChats(): Promise<void> {
             const chatsIds: number[] = [];
             chats.forEach(chat => chatsIds.push(chat.id));
 
-            await LoadManager.chats.load(chatsIds);
-            await fillMemoryCache();
+            const loadedChats = await LoadManager.chats.load(chatsIds);
+            loadedChats.forEach(chat => MemoryCache.appendChat(chat));
 
             console.log(`${TAG}: cached chats updated`);
         }
-    ));
+    );
 }

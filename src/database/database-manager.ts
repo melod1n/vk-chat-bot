@@ -2,18 +2,12 @@ import sqlite3 from 'sqlite3';
 
 export let database: sqlite3.Database;
 
-export function setDatabase(newDb: sqlite3.Database) {
-    database = newDb;
-}
-
 export class DatabaseManager {
     chatsTable = 'chats';
     usersTable = 'users';
     notesTable = 'notes';
     adminsTable = 'admins';
     mutedTable = 'muted';
-
-    database: sqlite3.Database;
 
     private createChatsTable =
         `create table ${this.chatsTable} ("id" integer primary key on conflict replace, "isAllowed" integer default 1, "membersCount" integer default 0, "type" text, "title" text, "adminsIds" text, "usersIds" text);`;
@@ -26,8 +20,12 @@ export class DatabaseManager {
     private createMutedTable =
         `create table ${this.mutedTable} ("id" integer primary key on conflict replace)`;
 
-    constructor(database: sqlite3.Database) {
-        this.database = database;
+    private constructor(newDb: sqlite3.Database) {
+        database = newDb;
+    }
+
+    static create(newDb: sqlite3.Database): DatabaseManager {
+        return new DatabaseManager(newDb);
     }
 
     async init(): Promise<void> {
@@ -37,23 +35,20 @@ export class DatabaseManager {
         const adminsExists = await this.checkIsTableExists(this.adminsTable);
         const mutedExists = await this.checkIsTableExists(this.mutedTable);
 
-
-        if (!chatsExists) await this.database.exec(this.createChatsTable);
-        if (!usersExists) await this.database.exec(this.createUsersTable);
-        if (!notesExists) await this.database.exec(this.createNotesTable);
-        if (!adminsExists) await this.database.exec(this.createAdminsTable);
-        if (!mutedExists) await this.database.exec(this.createMutedTable);
+        if (!chatsExists) await database.exec(this.createChatsTable);
+        if (!usersExists) await database.exec(this.createUsersTable);
+        if (!notesExists) await database.exec(this.createNotesTable);
+        if (!adminsExists) await database.exec(this.createAdminsTable);
+        if (!mutedExists) await database.exec(this.createMutedTable);
 
     }
 
     private checkIsTableExists(tableName: string): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
-            await this.database.each(`select name from sqlite_master where type='table' and name='${tableName}'`, (e, row) => {
+            await database.each(`select name from sqlite_master where type='table' and name='${tableName}'`, (e, row) => {
                 if (e) reject(e);
                 else if (row.name == tableName) resolve(true); else resolve(false);
             });
         });
     }
-
-
 }

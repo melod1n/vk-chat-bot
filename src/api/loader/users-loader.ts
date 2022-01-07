@@ -13,14 +13,14 @@ export class UsersLoader extends Loader<VkUser> {
             vk.api.users.get({
                 user_ids: usersIds.join(','),
                 fields: ['photo_50', 'photo_100', 'photo_200', 'status', 'screen_name', 'online', 'last_seen', 'verified', 'sex']
-            }).catch(reject).then(async (r) => {
+            }).then(async (r) => {
                 const users = VkUser.parse(r);
                 resolve(users);
 
                 users.forEach(user => MemoryCache.appendUser(user));
 
                 await CacheStorage.users.store(users);
-            });
+            }).catch(reject);
         });
     }
 

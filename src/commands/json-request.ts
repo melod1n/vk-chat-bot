@@ -15,16 +15,18 @@ export class JsonRequest extends Command {
         let url = params[1];
         if (!url.includes('http') && !url.includes('///')) url = `https://${url}`;
 
-        await Api.sendMessage(context, 'секунду...');
+        const waitContext = await context.send('секунду...');
 
         try {
             const f = (await fetch(url));
             const js = await f.json();
             const result = (JSON.stringify(js, null, 2));
-            await Api.sendMessage(context, result, null, context.id);
+
+            await Api.editMessage(context.peerId, waitContext.conversationMessageId, result);
         } catch (e) {
-            console.error(`${TAG_ERROR} /json: ${Utils.getExceptionText(e)}`);
-            await Api.sendMessage(context, 'Произошла ошибка.', null, context.id);
+            console.error(`${TAG_ERROR} json-request.ts: ${Utils.getExceptionText(e)}`);
+
+            await Api.editMessage(context.peerId, waitContext.conversationMessageId, 'Произошла ошибка 😞');
         }
     }
 }

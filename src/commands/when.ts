@@ -1,7 +1,5 @@
 import {Command} from '../model/chat-command';
 import {Utils} from '../util/utils';
-import {LoadManager} from '../api/load-manager';
-import {Api} from '../api/api';
 
 export class When extends Command {
     regexp = /^\/(when|когда)\s([^]+)/i;
@@ -80,12 +78,7 @@ export class When extends Command {
                 break;
         }
 
-        const msg = await LoadManager.messages.loadByConversationMessageId(
-            context.peerId,
-            context.conversationMessageId
-        );
-
-        await Api.sendMessage(context, text, false, msg.messageId).catch(console.error);
+        await context.reply(text);
     }
 
 }

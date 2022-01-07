@@ -3,6 +3,7 @@ import {Api} from '../api/api';
 import {LoadManager} from '../api/load-manager';
 import {vk} from '../index';
 import {MemoryCache} from '../database/memory-cache';
+import {MessageContext} from 'vk-io';
 
 class Title extends Command {
     regexp = /^\/title\s([^]+)/i;
@@ -34,11 +35,15 @@ class UserTitle extends Command {
     );
 
     async execute(context, params) {
-        try {
-            const userId = Number(params[1]);
+        const userId = Number(params[1]);
 
+        let waitContext: MessageContext = await context.send('секунду...');
+
+        try {
             let user = await MemoryCache.getUser(userId);
-            if (!user) user = await LoadManager.users.loadSingle(userId);
+            if (!user) {
+                user = await LoadManager.users.loadSingle(userId);
+            }
 
             const fullName = `${user.firstName} ${user.lastName}`;
             const photo = user.photo200;
@@ -54,8 +59,15 @@ class UserTitle extends Command {
             }
 
             await Api.changeChatTitle(context, fullName);
+            await Api.deleteMessage(context.peerId, waitContext.conversationMessageId);
         } catch (e) {
-            await Api.sendMessage(context, 'Произошла ошибка.');
+            console.error(e);
+
+            const errorText = e.code == 22 ? 'Ошибка загрузки аватарки 😾' :
+                e.code == 100 ? 'Неверный id пользователя 😠'
+                    : 'Произошла ошибка 😖';
+
+            await Api.editMessage(context.peerId, waitContext.conversationMessageId, errorText);
         }
 
     }

@@ -1,5 +1,4 @@
 import {Command} from '../model/chat-command';
-import {Api} from '../api/api';
 import {TAG_ERROR, vk} from '../index';
 import {StorageManager} from '../database/storage-manager';
 import {Utils} from '../util/utils';

@@ -12,7 +12,7 @@ export class ChatsStorage extends Storage<VkChat> {
                 if (ids) {
                     let value: VkChat = null;
 
-                    await this.database().each(query, [ids], (error, row) => {
+                    await this.database.each(query, [ids], (error, row) => {
                         console.log('chat: ' + row);
                         if (error) {
                             reject(error);
@@ -26,7 +26,7 @@ export class ChatsStorage extends Storage<VkChat> {
                 } else {
                     let values: VkChat[] = [];
 
-                    await this.database().each(query, (error, row) => {
+                    await this.database.each(query, (error, row) => {
                         if (error) {
                             reject(error);
                             return;
@@ -49,8 +49,8 @@ export class ChatsStorage extends Storage<VkChat> {
     async store(values: VkChat[]): Promise<void> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
-                this.database().serialize(() => {
-                    this.database().run(`insert into ${this.tableName} (id, type, localId, title, isAllowed, membersCount, adminsIds, usersIds) values (?, ?, ?, ?, ?, ?, ?, ?)`,
+                this.database.serialize(() => {
+                    this.database.run(`insert into ${this.tableName} (id, type, localId, title, isAllowed, membersCount, adminsIds, usersIds) values (?, ?, ?, ?, ?, ?, ?, ?)`,
                         [value.id, value.type, value.localId, value.title, value.isAllowed,
                             value.membersCount, value.getAdminIds(), value.getUsers()],
                         (error) => {
@@ -76,8 +76,8 @@ export class ChatsStorage extends Storage<VkChat> {
                 query += ' or ';
                 query += `id = ${ids[i]}`;
             }
-            this.database().serialize(() => {
-                this.database().run(query, [], (e) => {
+            this.database.serialize(() => {
+                this.database.run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -91,8 +91,8 @@ export class ChatsStorage extends Storage<VkChat> {
 
     async clear(): Promise<void> {
         return new Promise((resolve) => {
-            this.database().serialize(() => {
-                this.database().run(`delete from ${this.tableName}`);
+            this.database.serialize(() => {
+                this.database.run(`delete from ${this.tableName}`);
                 resolve();
             });
         });

@@ -5,9 +5,15 @@ import {NotesStorage} from './storage/notes-storage';
 
 export class CacheStorage {
 
-    static users = new UsersStorage();
-    static chats = new ChatsStorage();
-    static admins = new AdminsStorage();
-    static notes = new NotesStorage();
+    static users: UsersStorage;
+    static chats: ChatsStorage;
+    static admins: AdminsStorage;
+    static notes: NotesStorage;
 
+    static init() {
+        this.users = new UsersStorage();
+        this.chats = new ChatsStorage();
+        this.admins = new AdminsStorage();
+        this.notes = new NotesStorage();
+    }
 }

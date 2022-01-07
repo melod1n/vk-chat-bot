@@ -1,7 +1,6 @@
 import {MessageContext} from 'vk-io';
 import {TAG_ERROR, vk} from '../index';
 import {Utils} from '../util/utils';
-import {StorageManager} from '../database/storage-manager';
 import {MessagesEditParams} from 'vk-io/lib/api/schemas/params';
 
 export class Api {
@@ -26,12 +25,7 @@ export class Api {
             if (replyTo) params['reply_to'] = replyTo;
             if (keyboard) params['keyboard'] = keyboard;
 
-            vk.api.messages.send(params).then((id) => {
-                    resolve(id);
-
-                    StorageManager.increaseSentMessagesCount();
-                }
-            ).catch(reject);
+            vk.api.messages.send(params).then((id) => resolve(id)).catch(reject);
         });
     }
 
@@ -60,6 +54,16 @@ export class Api {
     static async changeChatTitle(context: MessageContext, title: string): Promise<any> {
         return new Promise((resolve, reject) => {
             vk.api.messages.editChat({chat_id: context.chatId, title: title}).catch(reject).then(resolve);
+        });
+    }
+
+    static async deleteMessage(peerId: number, conversationMessageId: number, deleteForAll: boolean = true): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            await vk.api.messages.delete({
+                peer_id: peerId,
+                conversation_message_ids: [conversationMessageId],
+                delete_for_all: deleteForAll
+            }).then(resolve).catch(reject);
         });
     }
 

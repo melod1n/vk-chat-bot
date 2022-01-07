@@ -11,8 +11,11 @@ export class Random extends Command {
     async execute(context, params) {
         const min = parseInt(params[1]);
         const max = parseInt(params[2]);
+        const random = Utils.getRangedRandomInt(min, max);
 
-        await Api.sendMessage(context, Utils.getRangedRandomInt(min, max).toString());
+        const randomText = `[${min}; ${max}]: ${random}`;
+
+        await Api.sendMessage(context, randomText);
     }
 
 }

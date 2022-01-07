@@ -5,8 +5,6 @@ import {MemoryCache} from '../database/memory-cache';
 import {CacheStorage} from '../database/cache-storage';
 import {MessageContext, MessageForwardsCollection} from 'vk-io';
 import {TAG, TAG_ERROR} from '../index';
-import {StorageManager} from '../database/storage-manager';
-import {VkUser} from '../model/vk-user';
 
 class AdminsList extends Command {
     regexp = /^\/admins/i;
@@ -58,7 +56,6 @@ class AdminAdd extends Command {
         if (userId < 0) {
             console.error(`${TAG_ERROR}: /addAdmin: groupId not allowed`);
             await context.reply('Группу нельзя добавить администратором 🙄');
-            await StorageManager.increaseSentMessagesCount();
             return;
         }
 
@@ -77,7 +74,6 @@ class AdminAdd extends Command {
         if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /addAdmin: wrong userId`);
             await context.reply('Неверный userId.');
-            await StorageManager.increaseSentMessagesCount();
         } else {
             let waitContext = null;
 

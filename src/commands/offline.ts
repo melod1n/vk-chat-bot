@@ -11,6 +11,8 @@ export class Offline extends Command {
     requirements = Requirements.Create(Requirement.CHAT);
 
     async execute(context): Promise<void> {
+        const waitContext = await context.send('секунду...');
+
         const users = (await LoadManager.chats.loadSingle(context.peerId)).users;
         const allCount = users.length;
 
@@ -34,6 +36,6 @@ export class Offline extends Command {
             text += `\n(Пользователей, скрывших онлайн: ${hiddenOnlineUsers.length})`;
         }
 
-        await Api.sendMessage(context, text, true);
+        await Api.editMessage(context.peerId, waitContext.conversationMessageId, text);
     }
 }

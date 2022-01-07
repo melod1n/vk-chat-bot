@@ -13,7 +13,7 @@ export class UsersStorage extends Storage<VkUser> {
                 if (ids) {
                     let value: VkUser = null;
 
-                    await this.database().each(query, [ids], (error, row) => {
+                    await this.database.each(query, [ids], (error, row) => {
                         if (error) {
                             return reject(error);
                         }
@@ -24,7 +24,7 @@ export class UsersStorage extends Storage<VkUser> {
                 } else {
                     let values: VkUser[] = [];
 
-                    await this.database().each(query, (error, row) => {
+                    await this.database.each(query, (error, row) => {
                         if (error) {
                             reject(error);
                             return;
@@ -47,7 +47,7 @@ export class UsersStorage extends Storage<VkUser> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
                 MemoryCache.appendUser(value);
-                this.database().run(`insert into ${this.tableName} values (?, ?, ?, ?, ?)`,
+                this.database.run(`insert into ${this.tableName} values (?, ?, ?, ?, ?)`,
                     [value.id, value.firstName, value.lastName, value.isClosed, value.photo200],
                     (error) => {
                         if (error) reject(error);
@@ -70,8 +70,8 @@ export class UsersStorage extends Storage<VkUser> {
                 query += ' or ';
                 query += `id = ${ids[i]}`;
             }
-            this.database().serialize(() => {
-                this.database().run(query, [], (e) => {
+            this.database.serialize(() => {
+                this.database.run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -85,8 +85,8 @@ export class UsersStorage extends Storage<VkUser> {
 
     async clear(): Promise<void> {
         return new Promise((resolve) => {
-            this.database().serialize(() => {
-                this.database().run(`delete from ${this.tableName}`);
+            this.database.serialize(() => {
+                this.database.run(`delete from ${this.tableName}`);
                 resolve();
             });
         });

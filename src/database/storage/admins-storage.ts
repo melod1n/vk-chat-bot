@@ -40,8 +40,8 @@ export class AdminsStorage extends Storage<number> {
                 query += ' or ';
                 query += `id = ${ids[i]}`;
             }
-            this.database().serialize(() => {
-                this.database().run(query, [], (e) => {
+            this.database.serialize(() => {
+                this.database.run(query, [], (e) => {
                     if (e) reject(e);
                     else resolve();
                 });
@@ -58,7 +58,7 @@ export class AdminsStorage extends Storage<number> {
                 const query = `select * from ${this.tableName}`;
                 const values: number[] = [];
 
-                await this.database().each(query, (error, row) => {
+                await this.database.each(query, (error, row) => {
                     if (error) {
                         reject(error);
                         return;
@@ -82,8 +82,8 @@ export class AdminsStorage extends Storage<number> {
                 if (!MemoryCache.includesAdmin(value))
                     MemoryCache.appendAdmin(value);
 
-                this.database().serialize(() => {
-                    this.database().run(`insert into ${this.tableName} values (?)`, [value],
+                this.database.serialize(() => {
+                    this.database.run(`insert into ${this.tableName} values (?)`, [value],
                         (error) => {
                             if (error) reject(error);
                             else resolve();
@@ -102,8 +102,8 @@ export class AdminsStorage extends Storage<number> {
         return new Promise((resolve) => {
             MemoryCache.clearAdmins();
 
-            this.database().serialize(() => {
-                this.database().run(`delete from ${this.tableName}`);
+            this.database.serialize(() => {
+                this.database.run(`delete from ${this.tableName}`);
                 resolve();
             });
         });

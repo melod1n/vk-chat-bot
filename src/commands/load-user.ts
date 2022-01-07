@@ -11,11 +11,14 @@ export class LoadUser extends Command {
     requirements = Requirements.Create(Requirement.BOT_ADMIN);
 
     async execute(context, params) {
+        const waitContext = await context.send('секунду...');
+
         try {
             const user = await LoadManager.users.loadSingle(Number(params[1]));
-            await Api.sendMessage(context, JSON.stringify(user));
+
+            await Api.editMessage(context.peerId, waitContext.conversationMessageId, JSON.stringify(user));
         } catch (e) {
-            await Api.sendMessage(context, 'Произошла ошибка.');
+            await Api.editMessage(context.peerId, waitContext.conversationMessageId, 'Произошла ошибка 😥');
         }
     }
 }

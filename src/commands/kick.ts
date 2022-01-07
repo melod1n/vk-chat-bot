@@ -24,7 +24,7 @@ export class Kick extends Command {
         if (Math.abs(message.fromId) === globalThis.id) {
             console.log(`${this.title}: fromId is bad`);
 
-            await Api.replyMessage(context, 'Нет.');
+            await context.reply('Нет.');
             return;
         }
 
