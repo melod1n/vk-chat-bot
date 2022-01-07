@@ -14,9 +14,6 @@ class Answers {
 
 export class StorageManager {
 
-    static currentSentMessages: number = 0;
-    static currentReceivedMessages: number = 0;
-
     static answers = new Answers();
 
     static fillAnswers(newAnswers: Answers) {
