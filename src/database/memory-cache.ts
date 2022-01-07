@@ -174,7 +174,10 @@ export class MemoryCache {
             }
 
             if (!found) {
-                CacheStorage.users.getSingle(userId).then(user => resolve(user)).catch(reject);
+                CacheStorage.users.getSingle(userId).then(user => {
+                    resolve(user);
+                    this.appendUser(user);
+                }).catch(reject);
             }
         });
 
@@ -192,7 +195,10 @@ export class MemoryCache {
             }
 
             if (!found) {
-                CacheStorage.chats.getSingle(peerId).then(chat => resolve(chat)).catch(reject);
+                CacheStorage.chats.getSingle(peerId).then(chat => {
+                    resolve(chat);
+                    this.appendChat(chat);
+                }).catch(reject);
             }
         });
     }
@@ -208,7 +214,10 @@ export class MemoryCache {
             }
 
             if (!found) {
-                CacheStorage.notes.getSingle(noteId).then(note => resolve(note)).catch(reject);
+                CacheStorage.notes.getSingle(noteId).then(note => {
+                    resolve(note);
+                    this.appendNote(note);
+                }).catch(reject);
             }
         });
     }

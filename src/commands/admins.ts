@@ -1,10 +1,12 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Api} from '../api/api';
 import {LoadManager} from '../api/load-manager';
 import {MemoryCache} from '../database/memory-cache';
 import {CacheStorage} from '../database/cache-storage';
 import {MessageContext, MessageForwardsCollection} from 'vk-io';
 import {TAG, TAG_ERROR} from '../index';
+import {StorageManager} from '../database/storage-manager';
+import {VkUser} from '../model/vk-user';
 
 class AdminsList extends Command {
     regexp = /^\/admins/i;
@@ -38,7 +40,7 @@ class AdminAdd extends Command {
     title = '/addAdmin';
     description = 'adds bot\'s admin by id or replied message';
 
-    requirements = Requirements.Build().apply(true);
+    requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(
         context: MessageContext,
@@ -51,6 +53,13 @@ class AdminAdd extends Command {
 
         if (reply) {
             userId = reply.senderId;
+        }
+
+        if (userId < 0) {
+            console.error(`${TAG_ERROR}: /addAdmin: groupId not allowed`);
+            await context.reply('Группу нельзя добавить администратором 🙄');
+            await StorageManager.increaseSentMessagesCount();
+            return;
         }
 
         if (!userId) {
@@ -67,23 +76,46 @@ class AdminAdd extends Command {
 
         if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /addAdmin: wrong userId`);
-            await Api.sendMessage(context, 'Неверный userId.', null, context.id);
+            await context.reply('Неверный userId.');
+            await StorageManager.increaseSentMessagesCount();
         } else {
-            console.log(`${TAG}: /addAdmin: added new admin: ${userId}`);
+            let waitContext = null;
 
-            let user = await MemoryCache.getUser(userId);
-            if (!user) {
-                await Api.sendMessage(context, 'секунду...');
-                user = await LoadManager.users.loadSingle(userId);
+            let message: string;
+
+            if (MemoryCache.includesAdmin(userId)) {
+                console.log(`${TAG}: /addAdmin: admin exists: ${userId}`);
+
+                let user = await MemoryCache.getUser(userId);
+                if (!user) {
+                    waitContext = await context.send('секунду...');
+                    user = await LoadManager.users.loadSingle(userId);
+                    if (user) await CacheStorage.users.storeSingle(user);
+                }
+
+                message = `@id${user.id}(${user.firstName} ${user.lastName}) уже является администратором 🙄`;
+            } else {
+                console.log(`${TAG}: /addAdmin: added new admin: ${userId}`);
+
+                let user = await MemoryCache.getUser(userId);
+
+                if (!user) {
+                    waitContext = await context.send('секунду...');
+                    user = await LoadManager.users.loadSingle(userId);
+                }
+
+                if (user) await CacheStorage.users.storeSingle(user);
+
+                message = `@id${user.id}(${user.firstName} ${user.lastName}) теперь администратор! 🥳`;
+
+                MemoryCache.appendAdmin(userId);
+                await CacheStorage.admins.storeSingle(userId);
             }
 
-            const message = `@id${user.id}(${user.firstName} ${user.lastName}) теперь администратор! 🥳`;
+            await (waitContext ?
+                Api.editMessage(context.peerId, waitContext.conversationMessageId, message) :
+                Api.sendMessage(context, message, true));
 
-            const sendMessagePromise = Api.sendMessage(context, message, true);
-            const storeUserPromise = CacheStorage.users.storeSingle(user);
-            const storeAdminPromise = CacheStorage.admins.storeSingle(userId);
-
-            await Promise.all([sendMessagePromise, storeUserPromise, storeAdminPromise]);
         }
     }
 
@@ -96,7 +128,7 @@ class AdminRemove extends Command {
     name = '/removeAdmin';
     description = 'removes bot\'s admin';
 
-    requirements = Requirements.Build().apply(true);
+    requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(context, params, fwd, reply): Promise<void> {
 

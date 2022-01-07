@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {LoadManager} from '../api/load-manager';
 import {Api} from '../api/api';
 
@@ -8,7 +8,7 @@ export class LoadUser extends Command {
     name = '/loadUser';
     description = 'user from vk api by it\'s id';
 
-    requirements = Requirements.Build().apply(false, true);
+    requirements = Requirements.Create(Requirement.BOT_ADMIN);
 
     async execute(context, params) {
         try {

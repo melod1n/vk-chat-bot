@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {TAG_ERROR} from '../index';
 import {Utils} from '../util/utils';
 import * as fetch from 'node-fetch';
@@ -9,7 +9,7 @@ export class JsonRequest extends Command {
     title = '/json';
     description = 'retrieved json from url';
 
-    requirements = Requirements.Build().apply(false, true, false, false, false, false);
+    requirements = Requirements.Create(Requirement.BOT_ADMIN);
 
     async execute(context, params) {
         let url = params[1];

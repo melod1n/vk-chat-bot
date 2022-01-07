@@ -8,7 +8,7 @@ export class NotesStorage extends Storage<Note> {
 
     checkIfStored(id: number): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
-            if (isFinite(id) || id <= 0) {
+            if (id <= 0) {
                 reject();
                 return;
             }

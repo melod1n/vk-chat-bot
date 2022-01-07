@@ -44,15 +44,17 @@ export class About extends Command {
                 random_id: 0,
                 disable_mentions: true
             }).then(async () => {
-                await Promise.all([
-                    StorageManager.increaseSentMessagesCount(),
-                    Api.sendMessage(context, 'Отправил информацию в ЛС 😎')
-                ]);
+                await StorageManager.increaseSentMessagesCount();
+                if (!context.isChat) return;
+                await Api.sendMessage(context, 'Отправил информацию в ЛС 😎');
             });
         } catch (e) {
             console.error(`${TAG_ERROR}: help.ts: ${Utils.getExceptionText(e)}`);
             if (e.code == 901) {
-                await Api.replyMessage(context, 'Разрешите мне писать Вам сообщения 🥺');
+                await Promise.all([
+                    StorageManager.increaseSentMessagesCount(),
+                    context.reply('Разрешите мне писать Вам сообщения 🥺')
+                ]);
             } else {
                 await Api.sendMessage(context, 'Не смог отправить информацию в ЛС ☹');
             }

@@ -9,7 +9,8 @@ export class Stats extends Command {
     description = 'bot\'s stats';
 
     async execute(context) {
-        const text = `Статистика бота.\n\n⏳ Время работы: ${Utils.getUptime()}\n📥 Сообщений получено: ${StorageManager.currentReceivedMessages}\n📤 Сообщений отправлено: ${StorageManager.currentSentMessages}\n\n📥 Сообщений получено (всего): ${StorageManager.settings.messagesReceived}\n📤 Сообщений отправлено (всего): ${StorageManager.settings.messagesSent}`;
+        const text = `Статистика бота.\n\n⏳ Время работы: ${Utils.getUptime()}\n📥 Сообщений получено: ${StorageManager.currentReceivedMessages}\n📤 Сообщений отправлено: ${StorageManager.currentSentMessages}`;
+        const allStats = `\n\n📥 Сообщений получено (всего): ${StorageManager.settings.messagesReceived}\n📤 Сообщений отправлено (всего): ${StorageManager.settings.messagesSent}`;
         await Api.sendMessage(context, text);
     }
 }

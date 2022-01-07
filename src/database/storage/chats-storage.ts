@@ -33,9 +33,9 @@ export class ChatsStorage extends Storage<VkChat> {
                         }
 
                         values.push(this.fill(row));
+                    }, (e) => {
+                        if (!e) resolve(values);
                     });
-
-                    resolve(values);
                 }
             }
         );
@@ -50,7 +50,7 @@ export class ChatsStorage extends Storage<VkChat> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
                 this.database().serialize(() => {
-                    this.database().run(`insert into ${this.tableName} values (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    this.database().run(`insert into ${this.tableName} (id, type, localId, title, isAllowed, membersCount, adminsIds, usersIds) values (?, ?, ?, ?, ?, ?, ?, ?)`,
                         [value.id, value.type, value.localId, value.title, value.isAllowed,
                             value.membersCount, value.getAdminIds(), value.getUsers()],
                         (error) => {
@@ -108,15 +108,15 @@ export class ChatsStorage extends Storage<VkChat> {
         chat.type = row.type;
         chat.title = row.title;
 
-        if (row.users) {
-            const splitUsers: string[] = row.users.split(',');
+        if (row.usersIds) {
+            const splitUsers: string[] = row.usersIds.split(',');
             splitUsers.forEach(userId => {
                 chat.usersIds.push(parseInt(userId));
             });
         }
 
-        if (row.admins) {
-            const splitAdmins: string[] = row.admins.split(',');
+        if (row.adminsIds) {
+            const splitAdmins: string[] = row.adminsIds.split(',');
             splitAdmins.forEach(adminId => {
                 chat.admins.push(parseInt(adminId));
             });

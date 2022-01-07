@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {LoadManager} from '../api/load-manager';
 import {Api} from '../api/api';
 
@@ -9,7 +9,7 @@ export class Online extends Command {
     name = '/online';
     description = 'users who online';
 
-    requirements = Requirements.Build().apply(false, false, false, true);
+    requirements = Requirements.Create(Requirement.CHAT);
 
     async execute(context): Promise<void> {
         const users = (await LoadManager.chats.loadSingle(context.peerId)).users;
@@ -26,7 +26,6 @@ export class Online extends Command {
             const name = `@id${user.id}(${user.firstName} ${user.lastName})`;
             const sex = `заш${user.sex == 1 ? 'ла' : user.sex == 0 ? 'ло' : 'ёл'}`;
             const time = `${!user.onlineVisible ? '' : `${new Date(user.lastSeen * 1000).toLocaleString()}`}`;
-
 
             text += `${sexIcon} ${platform} ${name} ${time === '' ? '' : sex} ${time}\n`;
         }

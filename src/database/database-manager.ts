@@ -1,8 +1,8 @@
-import {Database} from 'sqlite';
+import sqlite3 from 'sqlite3';
 
-export let database;
+export let database: sqlite3.Database;
 
-export function setDatabase(newDb: Database) {
+export function setDatabase(newDb: sqlite3.Database) {
     database = newDb;
 }
 
@@ -13,7 +13,7 @@ export class DatabaseManager {
     adminsTable = 'admins';
     mutedTable = 'muted';
 
-    database: Database;
+    database: sqlite3.Database;
 
     private createChatsTable =
         `create table ${this.chatsTable} ("id" integer primary key on conflict replace, "isAllowed" integer default 1, "membersCount" integer default 0, "type" text, "title" text, "adminsIds" text, "usersIds" text);`;
@@ -26,7 +26,7 @@ export class DatabaseManager {
     private createMutedTable =
         `create table ${this.mutedTable} ("id" integer primary key on conflict replace)`;
 
-    constructor(database: Database) {
+    constructor(database: sqlite3.Database) {
         this.database = database;
     }
 

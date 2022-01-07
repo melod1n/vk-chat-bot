@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Bat} from './bat';
 import {vk} from '../index';
 
@@ -8,7 +8,7 @@ export class Restart extends Command {
     name = '/restart';
     description = 'restarts bot';
 
-    requirements = Requirements.Build().apply(true);
+    requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(context): Promise<void> {
         await Promise.all([

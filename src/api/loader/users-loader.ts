@@ -25,7 +25,6 @@ export class UsersLoader extends Loader<VkUser> {
     }
 
     async loadSingle(userId: number): Promise<VkUser> {
-        if (isFinite(userId)) return null;
         return new Promise((resolve, reject) => this.load([userId]).then(users => resolve(users[0])).catch(reject));
     }
 

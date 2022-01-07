@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Note} from '../model/note';
 import {CacheStorage} from '../database/cache-storage';
 import {Api} from '../api/api';
@@ -8,7 +8,7 @@ class NoteAdd extends Command {
     regexp = /^\/note\s([^]+)\n/i;
     title = '/note';
     description = 'note';
-    requirements = Requirements.Build().isRequiresBotAdmin(true);
+    requirements = Requirements.Create(Requirement.BOT_ADMIN);
 
     async execute(context, params): Promise<void> {
         const title = params[1];

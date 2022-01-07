@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {LoadManager} from '../api/load-manager';
 import {Api} from '../api/api';
 
@@ -8,7 +8,7 @@ export class Offline extends Command {
     name = '/offline';
     description = 'offline users';
 
-    requirements = Requirements.Build().apply(false, false, false, true);
+    requirements = Requirements.Create(Requirement.CHAT);
 
     async execute(context): Promise<void> {
         const users = (await LoadManager.chats.loadSingle(context.peerId)).users;

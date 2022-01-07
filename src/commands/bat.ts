@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Utils} from '../util/utils';
 import {Api} from '../api/api';
 
@@ -8,7 +8,7 @@ export class Bat extends Command {
     name = '/bat';
     description = 'executed value in cmd';
 
-    requirements = Requirements.Build().apply(true);
+    requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(context, params) {
         const text = params[1];

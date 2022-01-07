@@ -8,7 +8,7 @@ export class SystemSpecs extends Command {
     description = 'current hardware specs';
 
     async execute(context) {
-        await Api.sendMessage(context, 'секунду...');
+        const newContext = await context.send('секунду...');
 
         const systemInfo = await Promise.all([
             SystemInformation.osInfo(),
@@ -27,6 +27,6 @@ export class SystemSpecs extends Command {
                   CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
                   RAM: ${totalRam} GB`;
 
-        await Api.sendMessage(context, text);
+        await Api.editMessage(context.peerId, newContext.conversationMessageId, text);
     }
 }

@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Api} from '../api/api';
 import {LoadManager} from '../api/load-manager';
 
@@ -8,7 +8,12 @@ export class Kick extends Command {
     name = '/kick';
     description = 'kicks user from chat';
 
-    requirements = Requirements.Build().apply(false, true, true, true, false, true);
+    requirements = Requirements.Create(
+        Requirement.CHAT,
+        Requirement.BOT_CHAT_ADMIN,
+        Requirement.REPLY,
+        Requirement.BOT_ADMIN
+    );
 
     async execute(context) {
         const message = await LoadManager.messages.loadByConversationMessageId(

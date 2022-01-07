@@ -5,7 +5,7 @@ abstract class Command {
     abstract regexp: RegExp;
     abstract title: string;
     abstract description: string;
-    requirements = new Requirements();
+    requirements = Requirements.Create();
 
     abstract execute(
         context: MessageContext,
@@ -13,67 +13,54 @@ abstract class Command {
         fwd?: MessageForwardsCollection,
         reply?: MessageContext
     ): Promise<void>;
+
+    toString(): string {
+        return `${this.title}: ${this.description}`;
+    }
 }
 
+export enum Requirement {
+    BOT_CREATOR,
+    BOT_ADMIN,
+    BOT_CHAT_ADMIN,
+    CHAT,
+    FORWARDS,
+    REPLY
+}
 
-// TODO class -> enum
 class Requirements {
-    requireBotCreator?: boolean = false;
-    requireBotAdmin?: boolean = false;
-    requireChatAdmin?: boolean = false;
-    requireChat?: boolean = false;
-    requireForwards?: boolean = false;
-    requireReply?: boolean = false;
+    requirements: Requirement[] = [];
 
-    static Build(): Requirements {
-        return new Requirements();
+    private constructor(requirements?: Requirement[]) {
+        this.requirements = requirements;
     }
 
-    isRequiresBotCreator(requireBotCreator: boolean): this {
-        this.requireBotCreator = requireBotCreator;
-        return this;
+    static Create(...requirements: Requirement[]): Requirements {
+        return new Requirements(requirements);
     }
 
-    isRequiresBotAdmin(requireBotAdmin: boolean): this {
-        this.requireBotAdmin = requireBotAdmin;
-        return this;
+    isRequiresBotCreator(): boolean {
+        return this.requirements.includes(Requirement.BOT_CREATOR);
     }
 
-    isRequiresChatAdmin(requireChatAdmin: boolean): this {
-        this.requireChatAdmin = requireChatAdmin;
-        return this;
+    isRequiresBotAdmin(): boolean {
+        return this.requirements.includes(Requirement.BOT_ADMIN);
     }
 
-    isRequiresChat(requireChat: boolean): this {
-        this.requireChat = requireChat;
-        return this;
+    isRequiresBotChatAdmin(): boolean {
+        return this.requirements.includes(Requirement.BOT_CHAT_ADMIN);
     }
 
-    isRequiresForwards(requireForward: boolean): this {
-        this.requireForwards = requireForward;
-        return this;
+    isRequiresChat(): boolean {
+        return this.requirements.includes(Requirement.CHAT);
     }
 
-    isRequiresReply(requireReply: boolean): this {
-        this.requireReply = requireReply;
-        return this;
+    isRequiresForwards(): boolean {
+        return this.requirements.includes(Requirement.FORWARDS);
     }
 
-    apply(
-        creatorOnly: boolean = false,
-        requireAdmin: boolean = false,
-        requireChatAdmin: boolean = false,
-        requireChat: boolean = false,
-        requireForwards: boolean = false,
-        requireReply: boolean = false
-    ): this {
-        this.requireBotCreator = creatorOnly;
-        this.requireBotAdmin = requireAdmin;
-        this.requireChatAdmin = requireChatAdmin;
-        this.requireChat = requireChat;
-        this.requireForwards = requireForwards;
-        this.requireReply = requireReply;
-        return this;
+    isRequiresReply(): boolean {
+        return this.requirements.includes(Requirement.REPLY);
     }
 }
 

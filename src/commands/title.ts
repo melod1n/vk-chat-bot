@@ -1,4 +1,4 @@
-import {Command, Requirements} from '../model/chat-command';
+import {Command, Requirement, Requirements} from '../model/chat-command';
 import {Api} from '../api/api';
 import {LoadManager} from '../api/load-manager';
 import {vk} from '../index';
@@ -10,7 +10,11 @@ class Title extends Command {
     name = '/title';
     description = 'changes current chat\'s title';
 
-    requirements = Requirements.Build().apply(false, true, true, true);
+    requirements = Requirements.Create(
+        Requirement.CHAT,
+        Requirement.BOT_CHAT_ADMIN,
+        Requirement.BOT_ADMIN
+    );
 
     async execute(context, params) {
         await Api.changeChatTitle(context, params[1]);
@@ -23,7 +27,11 @@ class UserTitle extends Command {
     name = '/userTitle';
     description = 'changes chat\'s photo and title to user\'s';
 
-    requirements = Requirements.Build().apply(false, true, true, true);
+    requirements = Requirements.Create(
+        Requirement.CHAT,
+        Requirement.BOT_CHAT_ADMIN,
+        Requirement.BOT_ADMIN
+    );
 
     async execute(context, params) {
         try {

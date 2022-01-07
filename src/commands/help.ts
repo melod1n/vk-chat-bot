@@ -10,14 +10,7 @@ export class Help extends Command {
     description = 'this list';
 
     async execute(context) {
-        let text = `Commands = [\n${Utils.getCommandText(commands[0])}`;
-
-        for (let i = 1; i < commands.length; i++) {
-            text += ',\n';
-            text += Utils.getCommandText(commands[i]);
-        }
-
-        text += ']';
+        const text = `Commands:\n\n${commands.join('\n')}`;
 
         try {
             await vk.api.messages.send({
@@ -25,16 +18,17 @@ export class Help extends Command {
                 message: text,
                 random_id: 0
             }).then(async () => {
+                await StorageManager.increaseSentMessagesCount();
                 if (!context.isChat) return;
-                await Promise.all([
-                    StorageManager.increaseSentMessagesCount(),
-                    Api.sendMessage(context, 'Отправил команды в ЛС 😎')
-                ]);
+                await Api.sendMessage(context, 'Отправил команды в ЛС 😎');
             });
         } catch (e) {
             console.error(`${TAG_ERROR}: help.ts: ${Utils.getExceptionText(e)}`);
             if (e.code == 901) {
-                await Api.replyMessage(context, 'Разрешите мне писать Вам сообщения 🥺');
+                await Promise.all([
+                    StorageManager.increaseSentMessagesCount(),
+                    context.reply('Разрешите мне писать Вам сообщения 🥺')
+                ]);
             } else {
                 await Api.sendMessage(context, 'Не смог отправить команды в ЛС ☹');
             }

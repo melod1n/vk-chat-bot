@@ -1,9 +1,7 @@
 import 'reflect-metadata';
-import {Container} from 'inversify';
-import {InjectManager} from './di/inversify.config';
 import {MessageContext, VK} from 'vk-io';
 import {Utils} from './util/utils';
-import {Command, Requirements} from './model/chat-command';
+import {Command, Requirement, Requirements} from './model/chat-command';
 import {StorageManager} from './database/storage-manager';
 import {Api} from './api/api';
 import {Help} from './commands/help';
@@ -38,21 +36,16 @@ import {open} from 'sqlite';
 import sqlite3 from 'sqlite3';
 import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
 
-export const AppContainer = new Container();
-InjectManager.init();
-
-// export const databaseManager = new DatabaseManager();
+export const TAG = '[VKBot]';
+export const TAG_ERROR = `${TAG} [ERROR]`;
 
 dotenv.config();
 
 export const creatorId = Number(process.env['CREATOR_ID']);
 export let currentGroupId: number = -1;
 
-export const TAG = '[VKBot]';
-export const TAG_ERROR = `${TAG} [ERROR]`;
-
 export let vk = new VK({
-    token: process.env['TOKEN'],
+    token: process.env['TOKEN']
 });
 
 console.log(vk.api.options.apiVersion);
@@ -65,18 +58,17 @@ globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
 
 (async () => {
-    const retrieveGroupId = vk.api.call('groups.getById', {});
-    const setupPromise = setup();
+    const retrieveGroupId = await vk.api.call('groups.getById', {});
 
-    const data = await Promise.all([retrieveGroupId, setupPromise]);
-
-    const groupIdResponse: GroupsGroupFull[] = data[0];
+    const groupIdResponse: GroupsGroupFull[] = retrieveGroupId;
     currentGroupId = groupIdResponse[0].id;
 
     setInterval(async () => {
 
         await updateGroupDescription();
     }, 5000 * 60);
+
+    await setup();
 })();
 
 async function updateGroupDescription() {
@@ -94,21 +86,23 @@ vk.updates.on('message_new', async (context) => {
 
     const requirements = cmd.requirements;
 
-    if (requirements.requireBotCreator && context.senderId !== creatorId) {
+    if (requirements.isRequiresBotCreator() && context.senderId !== creatorId) {
         console.log(`${cmd.title}: creatorId is bad`);
         await context.reply('Вы не являетесь создателем бота.');
         return;
     }
 
-    if (requirements.requireBotAdmin && (!MemoryCache.includesAdmin(context.senderId) && context.senderId !== creatorId)) {
+    if (requirements.isRequiresBotAdmin() && (!MemoryCache.includesAdmin(context.senderId) && context.senderId !== creatorId)) {
         console.log(`${cmd.title}: adminId is bad`);
         await context.reply('Вы не являетесь администратором бота.');
         return;
     }
 
-    if (requirements.requireChatAdmin && context.isChat) {
+    if (requirements.isRequiresBotChatAdmin() && context.isChat) {
         let chat = await MemoryCache.getChat(context.peerId);
-        if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
+        if (!chat) {
+            chat = await LoadManager.chats.loadSingle(context.peerId);
+        }
 
         if (!chat || !chat.admins.includes(-Math.abs(currentGroupId))) {
             console.log(`${cmd.title}: chatAdminId is bad`);
@@ -117,19 +111,19 @@ vk.updates.on('message_new', async (context) => {
         }
     }
 
-    if (requirements.requireChat && !context.isChat) {
+    if (requirements.isRequiresChat() && !context.isChat) {
         console.log(`${cmd.title}: chatId is bad`);
         await context.reply('Тут Вам не чат.');
         return;
     }
 
-    if (requirements.requireForwards && !context.hasForwards) {
+    if (requirements.isRequiresForwards() && !context.hasForwards) {
         console.log(`${cmd.title}: forwards is bad`);
         await context.reply('Отсутствуют пересланные сообщения.');
         return;
     }
 
-    if (requirements.requireReply && !context.hasReplyMessage) {
+    if (requirements.isRequiresReply() && !context.hasReplyMessage) {
         console.log(`${cmd.title}: replyMessage is bad`);
         await context.reply('Отсутствует ответ на сообщение.');
         return;
@@ -143,7 +137,7 @@ vk.updates.on('message_new', async (context) => {
     );
 
     const increasePromise = StorageManager.increaseReceivedMessagesCount();
-    const loadChatPromise = LoadManager.chats.loadSingle(context.peerId);
+    const loadChatPromise = null;//LoadManager.chats.loadSingle(context.peerId);
     const loadUserPromise = LoadManager.users.loadSingle(context.senderId);
 
     await Promise.all([executeCommandPromise, increasePromise, loadChatPromise, loadUserPromise]);
@@ -162,13 +156,13 @@ vk.updates.start().catch(console.error).then(async () => {
     console.log(msg);
 });
 
-class Ae extends Command {
+export class Ae extends Command {
     regexp = /^\/ae\s([^]+)/i;
     title = '/ae [value]';
     name = '/ae';
     description = 'js eval';
 
-    requirements = Requirements.Build().apply(true);
+    requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
     async execute(context, params, fwd, reply) {
         const match = params[1];
@@ -266,16 +260,10 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
 }
 
 async function setup() {
-    const db = await open({driver: sqlite3.Database, filename: 'data/database.sqlite'});
+    const db = new sqlite3.Database('data/database.sqlite');
     setDatabase(db);
-    await (new DatabaseManager(db)).init();
-    // await databaseManager.init();
 
-    // process.on('uncaughtException', (e) => {
-    //     const errorText = Utils.getExceptionText(e);
-    //
-    //     console.error(`${TAG_ERROR}: ${errorText}`);
-    // });
+    await (new DatabaseManager(db)).init();
 
     await Promise.all([
         fillMemoryCache(),
