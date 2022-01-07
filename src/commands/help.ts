@@ -20,17 +20,23 @@ export class Help extends Command {
         text += ']';
 
         try {
-            await Promise.all([
-                context.isChat ? Api.sendMessage(context, 'Отправил команды в ЛС 😎') : null,
-                vk.api.messages.send({
-                    peer_id: context.senderId,
-                    message: text,
-                    random_id: Utils.getRandomInt(10000)
-                }).then(() => StorageManager.increaseSentMessagesCount())
-            ]);
+            await vk.api.messages.send({
+                peer_id: context.senderId,
+                message: text,
+                random_id: Utils.getRandomInt(10000)
+            }).then(async () => {
+                await Promise.all([
+                    StorageManager.increaseSentMessagesCount(),
+                    Api.sendMessage(context, 'Отправил команды в ЛС 😎')
+                ]);
+            });
         } catch (e) {
             console.error(`${TAG_ERROR}: help.ts: ${Utils.getExceptionText(e)}`);
-            await Api.sendMessage(context, 'Не смог отправить команды в ЛС ☹');
+            if (e.code == 901) {
+                await Api.replyMessage(context, 'Разрешите мне писать Вам сообщения 🥺');
+            } else {
+                await Api.sendMessage(context, 'Не смог отправить команды в ЛС ☹');
+            }
         }
     }
 }

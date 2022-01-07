@@ -2,7 +2,6 @@ import {Command, Requirements} from '../model/chat-command';
 import {LoadManager} from '../api/load-manager';
 import {Utils} from '../util/utils';
 import {Api} from '../api/api';
-import {CacheStorage} from '../database/cache-storage';
 import {StorageManager} from '../database/storage-manager';
 import {MemoryCache} from '../database/memory-cache';
 

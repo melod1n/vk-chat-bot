@@ -20,7 +20,7 @@ export class SystemSpecs extends Command {
         const cpuInfo = systemInfo[1];
         const memoryInfo = systemInfo[2];
 
-        const totalRam = memoryInfo.total / Math.pow(2, 30);
+        const totalRam = Math.round(memoryInfo.total / Math.pow(2, 30));
 
         const text = `NodeJS ${process.version}
                   OS: ${osInfo.distro}

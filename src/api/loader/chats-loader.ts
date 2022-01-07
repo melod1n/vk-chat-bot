@@ -12,10 +12,10 @@ export class ChatsLoader extends Loader<VkChat> {
 
         return new Promise(async (resolve, reject) => {
             try {
-                const jsonChats =
-                    (await vk.api.call('messages.getConversationsById', {
-                        peer_ids: peersIds.join(',')
-                    })).items;
+                const json = (await vk.api.call('messages.getConversationsById', {
+                    peer_ids: peersIds.join(',')
+                }));
+                const jsonChats = json.items;
 
                 const chats: VkChat[] = [];
                 const users: VkUser[] = [];

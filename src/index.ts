@@ -110,7 +110,7 @@ vk.updates.on('message_new', async (context) => {
         let chat = await MemoryCache.getChat(context.peerId);
         if (!chat) chat = await LoadManager.chats.loadSingle(context.peerId);
 
-        if (!chat.admins.includes(-Math.abs(currentGroupId))) {
+        if (!chat || !chat.admins.includes(-Math.abs(currentGroupId))) {
             console.log(`${cmd.title}: chatAdminId is bad`);
             await context.reply('Бот не является администратором чата.');
             return;
