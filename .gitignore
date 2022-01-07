@@ -83,8 +83,5 @@ typings/
 */*/*.js
 */*/*.map
 
-data
-data/answers.json
-data/settings.json
 src/index.js
 src/index.js.map

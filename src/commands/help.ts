@@ -23,8 +23,9 @@ export class Help extends Command {
             await vk.api.messages.send({
                 peer_id: context.senderId,
                 message: text,
-                random_id: Utils.getRandomInt(10000)
+                random_id: 0
             }).then(async () => {
+                if (!context.isChat) return;
                 await Promise.all([
                     StorageManager.increaseSentMessagesCount(),
                     Api.sendMessage(context, 'Отправил команды в ЛС 😎')

@@ -15,6 +15,8 @@ abstract class Command {
     ): Promise<void>;
 }
 
+
+// TODO class -> enum
 class Requirements {
     requireBotCreator?: boolean = false;
     requireBotAdmin?: boolean = false;
