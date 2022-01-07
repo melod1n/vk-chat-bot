@@ -1,6 +1,6 @@
-import sqlite3 from 'sqlite3';
+import {Database} from 'sqlite3';
 
-export let database: sqlite3.Database;
+export let database: Database;
 
 export class DatabaseManager {
     chatsTable = 'chats';
@@ -20,11 +20,11 @@ export class DatabaseManager {
     private createMutedTable =
         `create table ${this.mutedTable} ("id" integer primary key on conflict replace)`;
 
-    private constructor(newDb: sqlite3.Database) {
+    private constructor(newDb: Database) {
         database = newDb;
     }
 
-    static create(newDb: sqlite3.Database): DatabaseManager {
+    static create(newDb: Database): DatabaseManager {
         return new DatabaseManager(newDb);
     }
 

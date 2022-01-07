@@ -32,7 +32,7 @@ import {Offline} from './commands/offline';
 import {AdminAdd, AdminRemove, AdminsList} from './commands/admins';
 import {NoteAdd} from './commands/notes';
 import {DatabaseManager} from './database/database-manager';
-import sqlite3 from 'sqlite3';
+import {Database} from 'sqlite3';
 import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
 
 export const TAG = '[VKBot]';
@@ -251,7 +251,7 @@ async function sendKickUserMessage(context: MessageContext): Promise<any> {
 }
 
 async function setupDatabase() {
-    const db = new sqlite3.Database('data/database.sqlite');
+    const db = new Database('data/database.sqlite');
 
     await DatabaseManager.create(db).init();
     CacheStorage.init();
