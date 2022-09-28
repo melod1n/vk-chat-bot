@@ -11,7 +11,7 @@ export class UsersLoader extends Loader<VkUser> {
 
         return new Promise((resolve, reject) => {
             vk.api.users.get({
-                user_ids: usersIds.join(','),
+                user_ids: usersIds,
                 fields: ['photo_50', 'photo_100', 'photo_200', 'status', 'screen_name', 'online', 'last_seen', 'verified', 'sex']
             }).then(async (r) => {
                 const users = VkUser.parse(r);

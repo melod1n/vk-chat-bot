@@ -12,9 +12,14 @@ class Answers {
 
 }
 
+class AllowedIds {
+    ids: number[];
+}
+
 export class StorageManager {
 
     static answers = new Answers();
+    static allowedIds: number[] = [];
 
     static fillAnswers(newAnswers: Answers) {
         this.answers.kickAnswers = newAnswers.kickAnswers;
@@ -23,16 +28,22 @@ export class StorageManager {
         this.answers.betterAnswers = newAnswers.betterAnswers;
         this.answers.testAnswers = newAnswers.testAnswers;
     }
+
+    static fillAllowedIds(allowedIds: number[]) {
+        this.allowedIds = allowedIds;
+    }
 }
 
 loadData().then();
 
-async function loadData(): Promise<void> {
+function loadData(): Promise<void> {
     return new Promise((resolve, reject) => {
         try {
             const answers: Answers = JSON.parse(fs.readFileSync('data/answers.json').toString());
+            const allowedIds: AllowedIds = JSON.parse(fs.readFileSync('data/allowed_ids.json').toString());
 
             StorageManager.fillAnswers(answers);
+            StorageManager.fillAllowedIds(allowedIds.ids);
 
             resolve();
         } catch (e) {

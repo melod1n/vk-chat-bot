@@ -33,15 +33,18 @@ import {AdminAdd, AdminRemove, AdminsList} from './commands/admins';
 import {NoteAdd} from './commands/notes';
 import {DatabaseManager} from './database/database-manager';
 import {Database} from 'sqlite3';
-import {GroupsGroupFull} from 'vk-io/lib/api/schemas/objects';
+import {GroupsGroupFull} from "vk-io/lib/api/schemas/objects";
 
 export const TAG = '[VKBot]';
 export const TAG_ERROR = `${TAG} [ERROR]`;
 
 dotenv.config();
 
+const findAndKickUnAllowedMembers = true;
+
 export const creatorId = Number(process.env['CREATOR_ID']);
 export let currentGroupId: number = -1;
+const mainChatId = Number(process.env['MAIN_CHAT_ID'])
 
 export let vk = new VK({
     token: process.env['TOKEN']
@@ -60,9 +63,15 @@ globalThis.storage = StorageManager;
     const groupIdResponse: GroupsGroupFull[] = await vk.api.call('groups.getById', {});
     currentGroupId = groupIdResponse[0].id;
 
-    setInterval(async () => {
-        await updateGroupDescription();
-    }, 5000 * 60);
+    const intervalFunction = async () => {
+        const updateGroupDescriptionPromise = updateGroupDescription();
+        const checkUnAllowedMembersPromise = checkUnAllowedMembers();
+
+        await Promise.all([updateGroupDescriptionPromise, checkUnAllowedMembersPromise]);
+    };
+
+    await intervalFunction();
+    setInterval(intervalFunction, 5000 * 60);
 
     await setupDatabase();
 })();
@@ -138,7 +147,33 @@ vk.updates.on('message_new', async (context) => {
     await Promise.all([executeCommandPromise, loadChatPromise, loadUserPromise]);
 });
 
+export async function checkUnAllowedMembers(): Promise<boolean> {
+    if (!findAndKickUnAllowedMembers) return false;
+    const chatMembers = await vk.api.messages.getConversationMembers({peer_id: 2000000000 + mainChatId});
+    const chatMembersIds = chatMembers.items.map(m => m.member_id);
+    const membersToKick = []
+
+    chatMembersIds.forEach(memberId => {
+        if (StorageManager.allowedIds.indexOf(memberId) == -1) {
+            membersToKick.push(memberId);
+        }
+    });
+
+    if (membersToKick.length == 0) return false;
+
+    for (const memberId of membersToKick) {
+        setTimeout(async () => {
+            await vk.api.messages.removeChatUser({chat_id: mainChatId, member_id: memberId}).catch(console.error);
+        }, 500);
+    }
+
+    return true;
+}
+
 vk.updates.on(['chat_invite_user', 'chat_invite_user_by_link'], async (context) => {
+    if (await checkUnAllowedMembers()) {
+        return;
+    }
     await sendInviteUserMessage(context);
 });
 

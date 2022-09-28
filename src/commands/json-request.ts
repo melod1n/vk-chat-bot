@@ -1,7 +1,6 @@
 import {Command, Requirement, Requirements} from '../model/chat-command';
 import {TAG_ERROR} from '../index';
 import {Utils} from '../util/utils';
-import * as fetch from 'node-fetch';
 import {Api} from '../api/api';
 
 export class JsonRequest extends Command {
