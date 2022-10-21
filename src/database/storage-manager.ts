@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import {TAG_ERROR} from '../index';
-import {Utils} from '../util/utils';
+import * as fs from "fs";
+import {TAG_ERROR} from "../index";
+import {Utils} from "../util/utils";
 
 class Answers {
 
@@ -39,8 +39,8 @@ loadData().then();
 function loadData(): Promise<void> {
     return new Promise((resolve, reject) => {
         try {
-            const answers: Answers = JSON.parse(fs.readFileSync('data/answers.json').toString());
-            const allowedIds: AllowedIds = JSON.parse(fs.readFileSync('data/allowed_ids.json').toString());
+            const answers: Answers = JSON.parse(fs.readFileSync("data/answers.json").toString());
+            const allowedIds: AllowedIds = JSON.parse(fs.readFileSync("data/allowed_ids.json").toString());
 
             StorageManager.fillAnswers(answers);
             StorageManager.fillAllowedIds(allowedIds.ids);

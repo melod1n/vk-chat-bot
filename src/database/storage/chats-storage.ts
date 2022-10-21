@@ -1,19 +1,19 @@
-import {Storage} from '../../model/storage';
-import {VkChat} from '../../model/vk-chat';
+import {Storage} from "../../model/storage";
+import {VkChat} from "../../model/vk-chat";
 
 export class ChatsStorage extends Storage<VkChat> {
 
-    tableName = 'chats';
+    tableName = "chats";
 
     async get(ids?: number[]): Promise<VkChat[]> {
         return new Promise(async (resolve, reject) => {
-                const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
+                const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
 
                 if (ids) {
                     let value: VkChat = null;
 
                     await this.database.each(query, [ids], (error, row) => {
-                        console.log('chat: ' + row);
+                        console.log("chat: " + row);
                         if (error) {
                             reject(error);
                             return;
@@ -73,7 +73,7 @@ export class ChatsStorage extends Storage<VkChat> {
 
             let query = `delete from ${this.tableName} where id = ${ids[0]}`;
             for (let i = 1; i < ids.length; i++) {
-                query += ' or ';
+                query += " or ";
                 query += `id = ${ids[i]}`;
             }
             this.database.serialize(() => {
@@ -109,14 +109,14 @@ export class ChatsStorage extends Storage<VkChat> {
         chat.title = row.title;
 
         if (row.usersIds) {
-            const splitUsers: string[] = row.usersIds.split(',');
+            const splitUsers: string[] = row.usersIds.split(",");
             splitUsers.forEach(userId => {
                 chat.usersIds.push(parseInt(userId));
             });
         }
 
         if (row.adminsIds) {
-            const splitAdmins: string[] = row.adminsIds.split(',');
+            const splitAdmins: string[] = row.adminsIds.split(",");
             splitAdmins.forEach(adminId => {
                 chat.admins.push(parseInt(adminId));
             });

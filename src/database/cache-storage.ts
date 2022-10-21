@@ -1,7 +1,7 @@
-import {UsersStorage} from './storage/users-storage';
-import {ChatsStorage} from './storage/chats-storage';
-import {AdminsStorage} from './storage/admins-storage';
-import {NotesStorage} from './storage/notes-storage';
+import {UsersStorage} from "./storage/users-storage";
+import {ChatsStorage} from "./storage/chats-storage";
+import {AdminsStorage} from "./storage/admins-storage";
+import {NotesStorage} from "./storage/notes-storage";
 
 export class CacheStorage {
 

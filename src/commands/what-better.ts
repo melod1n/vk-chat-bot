@@ -1,13 +1,13 @@
-import {Command} from '../model/chat-command';
-import {Utils} from '../util/utils';
-import {Api} from '../api/api';
-import {StorageManager} from '../database/storage-manager';
+import {Command} from "../model/chat-command";
+import {Utils} from "../util/utils";
+import {Api} from "../api/api";
+import {StorageManager} from "../database/storage-manager";
 
 export class WhatBetter extends Command {
     regexp = /^\/(what|что)\s(better|лучше)\s([^]+)\s(or|или)\s([^]+)/i;
-    title = '/what better [a] or [b]';
-    name = '/what better';
-    description = 'a or b randomly (50% chance)';
+    title = "/what better [a] or [b]";
+    name = "/what better";
+    description = "a or b randomly (50% chance)";
 
     async execute(context, params) {
         const a = params[3];

@@ -1,9 +1,9 @@
-import {Loader} from '../../model/loader';
-import {VkChat} from '../../model/vk-chat';
-import {vk} from '../../index';
-import {VkUser} from '../../model/vk-user';
-import {CacheStorage} from '../../database/cache-storage';
-import {MemoryCache} from '../../database/memory-cache';
+import {Loader} from "../../model/loader";
+import {VkChat} from "../../model/vk-chat";
+import {vk} from "../../index";
+import {VkUser} from "../../model/vk-user";
+import {CacheStorage} from "../../database/cache-storage";
+import {MemoryCache} from "../../database/memory-cache";
 
 export class ChatsLoader extends Loader<VkChat> {
 
@@ -12,8 +12,8 @@ export class ChatsLoader extends Loader<VkChat> {
 
         return new Promise(async (resolve, reject) => {
             try {
-                const json = (await vk.api.call('messages.getConversationsById', {
-                    peer_ids: peersIds.join(',')
+                const json = (await vk.api.call("messages.getConversationsById", {
+                    peer_ids: peersIds.join(",")
                 }));
                 const jsonChats = json.items;
 
@@ -25,10 +25,10 @@ export class ChatsLoader extends Loader<VkChat> {
                     const membersIds = [];
                     const members: VkUser[] = [];
 
-                    const jsonMembers = await vk.api.call('messages.getConversationMembers',
+                    const jsonMembers = await vk.api.call("messages.getConversationMembers",
                         {
                             peer_id: chat.id,
-                            fields: 'photo_100,photo_200,online,online_mobile,online_info,sex'
+                            fields: "photo_100,photo_200,online,online_mobile,online_info,sex"
                         }
                     );
 

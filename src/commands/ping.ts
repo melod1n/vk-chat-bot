@@ -1,15 +1,15 @@
-import {Command} from '../model/chat-command';
-import {Api} from '../api/api';
+import {Command} from "../model/chat-command";
+import {Api} from "../api/api";
 
 export class Ping extends Command {
     regexp = /^\/ping/i;
-    title = '/ping';
-    description = 'bot\'s ping';
+    title = "/ping";
+    description = "bot's ping";
 
     async execute(context) {
         let startTime = Date.now();
 
-        const waitContext = await context.send('pong');
+        const waitContext = await context.send("pong");
 
         const nowMillis = Date.now();
 

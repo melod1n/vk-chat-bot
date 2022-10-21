@@ -1,7 +1,7 @@
-import {MessageContext} from 'vk-io';
-import {TAG_ERROR, vk} from '../index';
-import {Utils} from '../util/utils';
-import {MessagesEditParams} from 'vk-io/lib/api/schemas/params';
+import {MessageContext} from "vk-io";
+import {TAG_ERROR, vk} from "../index";
+import {Utils} from "../util/utils";
+import {MessagesEditParams} from "vk-io/lib/api/schemas/params";
 
 export class Api {
 
@@ -13,17 +13,17 @@ export class Api {
     }
 
     static async sendMessage(context: MessageContext, message?: string, disableMentions?: boolean,
-                             replyTo?: number, keyboard?: string): Promise<number> {
+        replyTo?: number, keyboard?: string): Promise<number> {
         return new Promise((resolve, reject) => {
             const params = {
                 peer_id: context.peerId,
                 random_id: 0
             };
 
-            if (message) params['message'] = message;
-            if (disableMentions) params['disable_mentions'] = disableMentions ? 1 : 0;
-            if (replyTo) params['reply_to'] = replyTo;
-            if (keyboard) params['keyboard'] = keyboard;
+            if (message) params["message"] = message;
+            if (disableMentions) params["disable_mentions"] = disableMentions ? 1 : 0;
+            if (replyTo) params["reply_to"] = replyTo;
+            if (keyboard) params["keyboard"] = keyboard;
 
             vk.api.messages.send(params).then((id) => resolve(id)).catch(reject);
         });

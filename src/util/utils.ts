@@ -1,5 +1,5 @@
-import * as child from 'child_process';
-import {Command} from '../model/chat-command';
+import * as child from "child_process";
+import {Command} from "../model/chat-command";
 
 export class Utils {
 
@@ -7,7 +7,7 @@ export class Utils {
         return new Promise<any>(((resolve, reject) => {
             child.exec(command, (error, stdout, stderr) => {
                 if (error) reject(error);
-                else if (typeof stderr !== 'string') reject(stderr);
+                else if (typeof stderr !== "string") reject(stderr);
                 else resolve(stdout);
             });
         }));
@@ -44,7 +44,7 @@ export class Utils {
             }
         }
 
-        let text = '';
+        let text = "";
 
         if (days > 0) text += `${days} д. `;
         if (hours > 0) text += `${hours} ч. `;

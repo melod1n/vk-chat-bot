@@ -1,14 +1,14 @@
-import {Command} from '../model/chat-command';
-import {Utils} from '../util/utils';
-import {creatorId} from '../index';
+import {Command} from "../model/chat-command";
+import {Utils} from "../util/utils";
+import {creatorId} from "../index";
 
-const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789';
+const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789";
 
 export class RandomString extends Command {
     regexp = /^\/randomstring\s(\d+)/i;
-    title = '/randomString [length]';
-    name = '/randomString';
-    description = 'randomized string (1 < length < 100)';
+    title = "/randomString [length]";
+    name = "/randomString";
+    description = "randomized string (1 < length < 100)";
 
     async execute(context, params) {
         const l = parseInt(params[1]);

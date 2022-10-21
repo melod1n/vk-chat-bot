@@ -1,13 +1,13 @@
-import {Database} from 'sqlite3';
+import {Database} from "sqlite3";
 
 export let database: Database;
 
 export class DatabaseManager {
-    chatsTable = 'chats';
-    usersTable = 'users';
-    notesTable = 'notes';
-    adminsTable = 'admins';
-    mutedTable = 'muted';
+    chatsTable = "chats";
+    usersTable = "users";
+    notesTable = "notes";
+    adminsTable = "admins";
+    mutedTable = "muted";
 
     private createChatsTable =
         `create table ${this.chatsTable} ("id" integer primary key on conflict replace, "isAllowed" integer default 1, "membersCount" integer default 0, "type" text, "title" text, "adminsIds" text, "usersIds" text);`;

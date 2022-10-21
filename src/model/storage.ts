@@ -1,5 +1,5 @@
-import {database} from '../database/database-manager';
-import {Database} from 'sqlite3';
+import {database} from "../database/database-manager";
+import {Database} from "sqlite3";
 
 export abstract class Storage<T> {
 

@@ -1,10 +1,10 @@
-import {Storage} from '../../model/storage';
-import {Note} from '../../model/note';
-import {MemoryCache} from '../memory-cache';
+import {Storage} from "../../model/storage";
+import {Note} from "../../model/note";
+import {MemoryCache} from "../memory-cache";
 
 export class NotesStorage extends Storage<Note> {
 
-    tableName = 'notes';
+    tableName = "notes";
 
     checkIfStored(id: number): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
@@ -37,7 +37,7 @@ export class NotesStorage extends Storage<Note> {
 
             let query = `delete from ${this.tableName} where id = ${ids[0]}`;
             for (let i = 1; i < ids.length; i++) {
-                query += ' or ';
+                query += " or ";
                 query += `id = ${ids[i]}`;
             }
             this.database.serialize(() => {
@@ -56,7 +56,7 @@ export class NotesStorage extends Storage<Note> {
     get(ids?: number[]): Promise<Note[]> {
         return new Promise((resolve, reject) => {
             this.database.serialize(async () => {
-                    const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
+                    const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
 
                     if (ids) {
                         let value: Note = null;

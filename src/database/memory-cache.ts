@@ -1,7 +1,7 @@
-import {VkUser} from '../model/vk-user';
-import {VkChat} from '../model/vk-chat';
-import {CacheStorage} from './cache-storage';
-import {Note} from '../model/note';
+import {VkUser} from "../model/vk-user";
+import {VkChat} from "../model/vk-chat";
+import {CacheStorage} from "./cache-storage";
+import {Note} from "../model/note";
 
 export class MemoryCache {
 

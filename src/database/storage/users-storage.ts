@@ -1,14 +1,14 @@
-import {VkUser} from '../../model/vk-user';
-import {Storage} from '../../model/storage';
-import {MemoryCache} from '../memory-cache';
+import {VkUser} from "../../model/vk-user";
+import {Storage} from "../../model/storage";
+import {MemoryCache} from "../memory-cache";
 
 export class UsersStorage extends Storage<VkUser> {
 
-    tableName = 'users';
+    tableName = "users";
 
     async get(ids?: number[]): Promise<VkUser[]> {
         return new Promise(async (resolve, reject) => {
-                const query = `select * from ${this.tableName}` + (ids ? ' where id = (?)' : '');
+                const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
 
                 if (ids) {
                     let value: VkUser = null;
@@ -67,7 +67,7 @@ export class UsersStorage extends Storage<VkUser> {
 
             let query = `delete from ${this.tableName} where id = ${ids[0]}`;
             for (let i = 1; i < ids.length; i++) {
-                query += ' or ';
+                query += " or ";
                 query += `id = ${ids[i]}`;
             }
             this.database.serialize(() => {

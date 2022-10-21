@@ -1,6 +1,6 @@
-import {UsersLoader} from './loader/users-loader';
-import {ChatsLoader} from './loader/chats-loader';
-import {MessagesLoader} from './loader/messages-loader';
+import {UsersLoader} from "./loader/users-loader";
+import {ChatsLoader} from "./loader/chats-loader";
+import {MessagesLoader} from "./loader/messages-loader";
 
 export class LoadManager {
 

@@ -1,7 +1,7 @@
-import {Loader} from '../../model/loader';
-import {VkMessage} from '../../model/vk-message';
-import {notImplemented} from '../base/errors';
-import {vk} from '../../index';
+import {Loader} from "../../model/loader";
+import {VkMessage} from "../../model/vk-message";
+import {notImplemented} from "../base/errors";
+import {vk} from "../../index";
 
 export class MessagesLoader extends Loader<VkMessage> {
 

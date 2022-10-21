@@ -1,3 +1,3 @@
-const notImplemented = new Error('Not implemented');
+const notImplemented = new Error("Not implemented");
 
 export {notImplemented};

@@ -1,9 +1,9 @@
-import {Storage} from '../../model/storage';
-import {MemoryCache} from '../memory-cache';
+import {Storage} from "../../model/storage";
+import {MemoryCache} from "../memory-cache";
 
 export class AdminsStorage extends Storage<number> {
 
-    tableName = 'admins';
+    tableName = "admins";
 
     async checkIfStored(id: number): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
@@ -37,7 +37,7 @@ export class AdminsStorage extends Storage<number> {
 
             let query = `delete from ${this.tableName} where id = ${ids[0]}`;
             for (let i = 1; i < ids.length; i++) {
-                query += ' or ';
+                query += " or ";
                 query += `id = ${ids[i]}`;
             }
             this.database.serialize(() => {

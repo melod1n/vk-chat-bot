@@ -1,14 +1,14 @@
-import {Command} from '../model/chat-command';
-import {Api} from '../api/api';
-import * as SystemInformation from 'systeminformation';
+import {Command} from "../model/chat-command";
+import {Api} from "../api/api";
+import * as SystemInformation from "systeminformation";
 
 export class SystemSpecs extends Command {
     regexp = /^\/systemspecs/i;
-    title = '/systemSpecs';
-    description = 'current hardware specs';
+    title = "/systemSpecs";
+    description = "current hardware specs";
 
     async execute(context) {
-        const newContext = await context.send('секунду...');
+        const newContext = await context.send("секунду...");
 
         const systemInfo = await Promise.all([
             SystemInformation.osInfo(),

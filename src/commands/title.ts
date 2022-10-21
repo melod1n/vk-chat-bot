@@ -1,15 +1,15 @@
-import {Command, Requirement, Requirements} from '../model/chat-command';
-import {Api} from '../api/api';
-import {LoadManager} from '../api/load-manager';
-import {vk} from '../index';
-import {MemoryCache} from '../database/memory-cache';
-import {MessageContext} from 'vk-io';
+import {Command, Requirement, Requirements} from "../model/chat-command";
+import {Api} from "../api/api";
+import {LoadManager} from "../api/load-manager";
+import {vk} from "../index";
+import {MemoryCache} from "../database/memory-cache";
+import {MessageContext} from "vk-io";
 
 class Title extends Command {
     regexp = /^\/title\s([^]+)/i;
-    title = '/title [value]';
-    name = '/title';
-    description = 'changes current chat\'s title';
+    title = "/title [value]";
+    name = "/title";
+    description = "changes current chat's title";
 
     requirements = Requirements.Create(
         Requirement.CHAT,
@@ -24,9 +24,9 @@ class Title extends Command {
 
 class UserTitle extends Command {
     regexp = /^\/usertitle\s(\d+)/i;
-    title = '/userTitle [userId]';
-    name = '/userTitle';
-    description = 'changes chat\'s photo and title to user\'s';
+    title = "/userTitle [userId]";
+    name = "/userTitle";
+    description = "changes chat's photo and title to user's";
 
     requirements = Requirements.Create(
         Requirement.CHAT,
@@ -37,7 +37,7 @@ class UserTitle extends Command {
     async execute(context, params) {
         const userId = Number(params[1]);
 
-        let waitContext: MessageContext = await context.send('секунду...');
+        const waitContext: MessageContext = await context.send("секунду...");
 
         try {
             let user = await MemoryCache.getUser(userId);
@@ -63,9 +63,9 @@ class UserTitle extends Command {
         } catch (e) {
             console.error(e);
 
-            const errorText = e.code == 22 ? 'Ошибка загрузки аватарки 😾' :
-                e.code == 100 ? 'Неверный id пользователя 😠'
-                    : 'Произошла ошибка 😖';
+            const errorText = e.code == 22 ? "Ошибка загрузки аватарки 😾" :
+                e.code == 100 ? "Неверный id пользователя 😠"
+                    : "Произошла ошибка 😖";
 
             await Api.editMessage(context.peerId, waitContext.conversationMessageId, errorText);
         }

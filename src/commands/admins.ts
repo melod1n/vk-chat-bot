@@ -1,23 +1,23 @@
-import {Command, Requirement, Requirements} from '../model/chat-command';
-import {Api} from '../api/api';
-import {LoadManager} from '../api/load-manager';
-import {MemoryCache} from '../database/memory-cache';
-import {CacheStorage} from '../database/cache-storage';
-import {MessageContext, MessageForwardsCollection} from 'vk-io';
-import {TAG, TAG_ERROR} from '../index';
+import {Command, Requirement, Requirements} from "../model/chat-command";
+import {Api} from "../api/api";
+import {LoadManager} from "../api/load-manager";
+import {MemoryCache} from "../database/memory-cache";
+import {CacheStorage} from "../database/cache-storage";
+import {MessageContext, MessageForwardsCollection} from "vk-io";
+import {TAG, TAG_ERROR} from "../index";
 
 class AdminsList extends Command {
     regexp = /^\/admins/i;
-    title = '/admins';
-    description = 'list of bot\'s admins';
+    title = "/admins";
+    description = "list of bot's admins";
 
     async execute(context) {
         if (MemoryCache.isAdminsEmpty()) {
-            await Api.sendMessage(context, 'Администраторов нет 😞');
+            await Api.sendMessage(context, "Администраторов нет 😞");
             return;
         }
 
-        let text = 'Список администраторов:\n\n';
+        let text = "Список администраторов:\n\n";
 
         for (let i = 0; i < MemoryCache.adminsSize(); i++) {
             const id = MemoryCache.getAdminByIndex(i);
@@ -35,8 +35,8 @@ class AdminsList extends Command {
 class AdminAdd extends Command {
 
     regexp = /^\/addadmin/i;
-    title = '/addAdmin';
-    description = 'adds bot\'s admin by id or replied message';
+    title = "/addAdmin";
+    description = "adds bot's admin by id or replied message";
 
     requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
@@ -55,13 +55,13 @@ class AdminAdd extends Command {
 
         if (userId < 0) {
             console.error(`${TAG_ERROR}: /addAdmin: groupId not allowed`);
-            await context.reply('Группу нельзя добавить администратором 🙄');
+            await context.reply("Группу нельзя добавить администратором 🙄");
             return;
         }
 
         if (!userId) {
-            if (context.text.includes(' ')) {
-                const split = context.text.split(' ');
+            if (context.text.includes(" ")) {
+                const split = context.text.split(" ");
                 try {
                     userId = Number(split[1]);
                     if (isNaN(userId)) userId = -1;
@@ -73,7 +73,7 @@ class AdminAdd extends Command {
 
         if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /addAdmin: wrong userId`);
-            await context.reply('Неверный userId.');
+            await context.reply("Неверный userId.");
         } else {
             let waitContext = null;
 
@@ -84,7 +84,7 @@ class AdminAdd extends Command {
 
                 let user = await MemoryCache.getUser(userId);
                 if (!user) {
-                    waitContext = await context.send('секунду...');
+                    waitContext = await context.send("секунду...");
                     user = await LoadManager.users.loadSingle(userId);
                     if (user) await CacheStorage.users.storeSingle(user);
                 }
@@ -96,7 +96,7 @@ class AdminAdd extends Command {
                 let user = await MemoryCache.getUser(userId);
 
                 if (!user) {
-                    waitContext = await context.send('секунду...');
+                    waitContext = await context.send("секунду...");
                     user = await LoadManager.users.loadSingle(userId);
                 }
 
@@ -120,9 +120,9 @@ class AdminAdd extends Command {
 class AdminRemove extends Command {
 
     regexp = /^\/removeAdmin/i;
-    title = '/removeAdmin';
-    name = '/removeAdmin';
-    description = 'removes bot\'s admin';
+    title = "/removeAdmin";
+    name = "/removeAdmin";
+    description = "removes bot's admin";
 
     requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
@@ -135,9 +135,9 @@ class AdminRemove extends Command {
         }
 
         if (!userId) {
-            if (context.text.includes(' ')) {
+            if (context.text.includes(" ")) {
                 try {
-                    userId = Number(context.text.split(' ')[1]);
+                    userId = Number(context.text.split(" ")[1]);
                     if (isNaN(userId)) userId = null;
                 } catch (e) {
                     userId = null;
@@ -147,14 +147,14 @@ class AdminRemove extends Command {
 
         if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /removeAdmin: wrong userId`);
-            await Api.sendMessage(context, 'Неверный userId.', null, context.id);
+            await Api.sendMessage(context, "Неверный userId.", null, context.id);
         } else {
             console.log(`${TAG}: /removeAdmin: removed admin: ${userId}`);
             await CacheStorage.admins.deleteSingle(userId);
 
             let user = await MemoryCache.getUser(userId);
             if (!user) {
-                await Api.sendMessage(context, 'секунду...');
+                await Api.sendMessage(context, "секунду...");
                 user = await LoadManager.users.loadSingle(userId);
             }
 

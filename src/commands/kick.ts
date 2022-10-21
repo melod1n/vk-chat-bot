@@ -1,12 +1,12 @@
-import {Command, Requirement, Requirements} from '../model/chat-command';
-import {Api} from '../api/api';
-import {LoadManager} from '../api/load-manager';
+import {Command, Requirement, Requirements} from "../model/chat-command";
+import {Api} from "../api/api";
+import {LoadManager} from "../api/load-manager";
 
 export class Kick extends Command {
     regexp = /^\/kick/i;
-    title = '/kick [reply]';
-    name = '/kick';
-    description = 'kicks user from chat';
+    title = "/kick [reply]";
+    name = "/kick";
+    description = "kicks user from chat";
 
     requirements = Requirements.Create(
         Requirement.CHAT,
@@ -24,7 +24,7 @@ export class Kick extends Command {
         if (Math.abs(message.fromId) === globalThis.id) {
             console.log(`${this.title}: fromId is bad`);
 
-            await context.reply('Нет.');
+            await context.reply("Нет.");
             return;
         }
 

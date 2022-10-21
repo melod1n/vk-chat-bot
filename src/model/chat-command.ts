@@ -1,4 +1,4 @@
-import {MessageContext, MessageForwardsCollection} from 'vk-io';
+import {MessageContext, MessageForwardsCollection} from "vk-io";
 
 abstract class Command {
 

@@ -1,10 +1,11 @@
-import {VkUser} from './vk-user';
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+import {VkUser} from "./vk-user";
 
 export class VkChat {
     id: number = -1;
-    type: string = '';
+    type: string = "";
     localId: number = -1;
-    title: string = '';
+    title: string = "";
     isAllowed: boolean = true;
     membersCount: number = 0;
     admins: number[] = [];
