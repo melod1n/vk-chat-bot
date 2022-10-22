@@ -1,2 +1,3 @@
 # vk-chat-bot
- Simple chat bot for VK written in TypeScript + VK IO
+ Simple bot for russian social network VKontakte.
+ Uses TypeScript + NodeJS + SQLite3 + VKIO
