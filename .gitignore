@@ -85,3 +85,5 @@ typings/
 
 src/index.js
 src/index.js.map
+
+.run
