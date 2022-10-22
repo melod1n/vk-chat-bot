@@ -1,4 +1,4 @@
-/* eslint-disable no-case-declarations */
+/* eslint-disable no-case-declarations,@typescript-eslint/no-unused-vars */
 import {Command} from "../model/chat-command";
 import {Utils} from "../util/utils";
 

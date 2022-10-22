@@ -1,4 +1,4 @@
-/* eslint-disable no-async-promise-executor */
+/* eslint-disable no-async-promise-executor,@typescript-eslint/no-unused-vars */
 import {Loader} from "../../model/loader";
 import {VkMessage} from "../../model/vk-message";
 import {notImplemented} from "../base/errors";

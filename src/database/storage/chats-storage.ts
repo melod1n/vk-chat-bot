@@ -99,6 +99,7 @@ export class ChatsStorage extends Storage<VkChat> {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fill(row: any): VkChat {
         const chat = new VkChat();
 

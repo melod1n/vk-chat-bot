@@ -93,6 +93,7 @@ export class UsersStorage extends Storage<VkUser> {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fill(row: any): VkUser {
         const user = new VkUser();
 

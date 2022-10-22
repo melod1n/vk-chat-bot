@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars */
+// noinspection JSUnusedLocalSymbols
+
 import {Command} from "../model/chat-command";
 
 class MuteAdd extends Command {

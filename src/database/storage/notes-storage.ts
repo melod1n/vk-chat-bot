@@ -126,6 +126,7 @@ export class NotesStorage extends Storage<Note> {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fill(row: any): Note {
         const note = new Note();
 

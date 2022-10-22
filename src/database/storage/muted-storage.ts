@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any */
+// noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
+
 import {Storage} from "../../model/storage";
 
 export class MutedStorage extends Storage<number> {

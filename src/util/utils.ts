@@ -4,7 +4,7 @@ import {Command} from "../model/chat-command";
 export class Utils {
 
     static async executeCommand(command: string): Promise<string> {
-        return new Promise<any>(((resolve, reject) => {
+        return new Promise<string>(((resolve, reject) => {
             child.exec(command, (error, stdout, stderr) => {
                 if (error) reject(error);
                 else if (typeof stderr !== "string") reject(stderr);

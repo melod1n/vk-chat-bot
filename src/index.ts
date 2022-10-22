@@ -47,8 +47,11 @@ export const creatorId = Number(process.env["CREATOR_ID"]);
 export let currentGroupId: number = -1;
 const mainChatId = Number(process.env["MAIN_CHAT_ID"]);
 
+const isDebug = Boolean(process.env.npm_config_debug);
+console.log(`isDebug: ${isDebug}`);
+
 export const vk = new VK({
-    token: process.env["TOKEN"]
+    token: process.env[isDebug ? "DEBUG_TOKEN" : "TOKEN"]
 });
 
 console.log(vk.api.options.apiVersion);
@@ -195,6 +198,7 @@ export class Ae extends Command {
 
     requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(context, params, fwd, reply) {
         const match = params[1];
 
@@ -288,7 +292,7 @@ async function sendKickUserMessage(context: MessageContext): Promise<unknown> {
 }
 
 async function setupDatabase() {
-    const db = new Database("data/database.sqlite");
+    const db = new Database(`data/${isDebug ? "database_debug.sqlite" : "database.sqlite"}`);
 
     await DatabaseManager.create(db).init();
     CacheStorage.init();
@@ -322,6 +326,10 @@ async function updateChats(): Promise<void> {
 
             const chatsIds: number[] = [];
             chats.forEach(chat => chatsIds.push(chat.id));
+
+            if (chatsIds.indexOf(0) != -1) {
+                throw Error("chatsIds list contains zero value");
+            }
 
             const loadedChats = await LoadManager.chats.load(chatsIds);
             loadedChats.forEach(chat => MemoryCache.appendChat(chat));

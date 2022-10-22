@@ -17,7 +17,7 @@ class NoteAdd extends Command {
         const note = new Note(title, content);
         await CacheStorage.notes.storeSingle(note).then(async () => {
             await Api.sendMessage(context, "Заметка успешно сохранена.");
-        }).catch(async (e) => {
+        }).catch(async () => {
             await Api.sendMessage(context, "Произошла ошибка при сохранении заметки. ");
         });
 

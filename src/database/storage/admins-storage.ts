@@ -1,4 +1,6 @@
-/* eslint-disable no-async-promise-executor */
+/* eslint-disable no-async-promise-executor,@typescript-eslint/no-unused-vars */
+// noinspection JSUnusedGlobalSymbols
+
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
 
@@ -73,7 +75,7 @@ export class AdminsStorage extends Storage<number> {
 
     }
 
-    async getSingle(params?: any): Promise<number> {
+    async getSingle(params?: unknown): Promise<number> {
         return Promise.resolve(0);
     }
 
@@ -110,7 +112,7 @@ export class AdminsStorage extends Storage<number> {
         });
     }
 
-    fill(row: any): number {
+    fill(row: unknown): number {
         return 0;
     }
 
