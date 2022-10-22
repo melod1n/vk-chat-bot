@@ -83,6 +83,9 @@ typings/
 */*/*.js
 */*/*.map
 
+*/*/*/*.js
+*/*/*/*.map
+
 src/index.js
 src/index.js.map
 
