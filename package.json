@@ -21,7 +21,7 @@
         "compile": "tsc",
         "node": "node src/index.js",
         "build": "npm run compile & npm start",
-        "start": "npm run node --debug=false"
+        "start": "npm run node"
     },
     "repository": {
         "type": "git",
