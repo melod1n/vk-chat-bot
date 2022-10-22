@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {Storage} from "../../model/storage";
 import {Note} from "../../model/note";
 import {MemoryCache} from "../memory-cache";
@@ -70,7 +71,7 @@ export class NotesStorage extends Storage<Note> {
 
                         resolve([value]);
                     } else {
-                        let values: Note[] = [];
+                        const values: Note[] = [];
 
                         await this.database.each(query, (error, row) => {
                             if (error) {

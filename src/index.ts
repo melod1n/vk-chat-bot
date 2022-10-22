@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types,no-async-promise-executor */
 import "reflect-metadata";
 import {MessageContext, VK} from "vk-io";
 import {Utils} from "./util/utils";
@@ -46,7 +47,7 @@ export const creatorId = Number(process.env["CREATOR_ID"]);
 export let currentGroupId: number = -1;
 const mainChatId = Number(process.env["MAIN_CHAT_ID"]);
 
-export let vk = new VK({
+export const vk = new VK({
     token: process.env["TOKEN"]
 });
 
@@ -182,7 +183,7 @@ vk.updates.on("chat_kick_user", async (context) => {
 });
 
 vk.updates.start().catch(console.error).then(async () => {
-    const msg = `bot is ready ;)`;
+    const msg = "bot is ready ;)";
     console.log(msg);
 });
 
@@ -218,6 +219,7 @@ export class Ae extends Command {
     }
 }
 
+// eslint-disable-next-line prefer-const
 export let commands: Command[] = [
     new About(),
     new AdminsList(),
@@ -263,7 +265,7 @@ async function searchCommand(context?: MessageContext, text?: string): Promise<C
     }));
 }
 
-async function sendInviteUserMessage(context: MessageContext): Promise<any> {
+async function sendInviteUserMessage(context: MessageContext): Promise<unknown> {
     if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
@@ -274,7 +276,7 @@ async function sendInviteUserMessage(context: MessageContext): Promise<any> {
     });
 }
 
-async function sendKickUserMessage(context: MessageContext): Promise<any> {
+async function sendKickUserMessage(context: MessageContext): Promise<unknown> {
     if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {

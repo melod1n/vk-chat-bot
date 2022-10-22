@@ -44,6 +44,7 @@ export class DatabaseManager {
     }
 
     private checkIsTableExists(tableName: string): Promise<boolean> {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             await database.each(`select name from sqlite_master where type='table' and name='${tableName}'`, (e, row) => {
                 if (e) reject(e);

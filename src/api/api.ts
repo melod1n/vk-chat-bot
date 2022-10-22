@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor,@typescript-eslint/no-inferrable-types */
 import {MessageContext} from "vk-io";
 import {TAG_ERROR, vk} from "../index";
 import {Utils} from "../util/utils";
@@ -5,7 +6,7 @@ import {MessagesEditParams} from "vk-io/lib/api/schemas/params";
 
 export class Api {
 
-    static async removeChatUser(chatId: number, userId: number): Promise<any> {
+    static async removeChatUser(chatId: number, userId: number): Promise<unknown> {
         return new Promise((resolve, reject) => vk.api.messages.removeChatUser({
             chat_id: chatId,
             user_id: userId
@@ -13,7 +14,7 @@ export class Api {
     }
 
     static async sendMessage(context: MessageContext, message?: string, disableMentions?: boolean,
-        replyTo?: number, keyboard?: string): Promise<number> {
+                             replyTo?: number, keyboard?: string): Promise<number> {
         return new Promise((resolve, reject) => {
             const params = {
                 peer_id: context.peerId,
@@ -51,7 +52,7 @@ export class Api {
         return this.sendMessage(context, message, true, context.id, keyboard);
     }
 
-    static async changeChatTitle(context: MessageContext, title: string): Promise<any> {
+    static async changeChatTitle(context: MessageContext, title: string): Promise<unknown> {
         return new Promise((resolve, reject) => {
             vk.api.messages.editChat({chat_id: context.chatId, title: title}).catch(reject).then(resolve);
         });

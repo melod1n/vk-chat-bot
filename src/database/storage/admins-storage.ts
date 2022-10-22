@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
 
@@ -55,19 +56,19 @@ export class AdminsStorage extends Storage<number> {
 
     async get(): Promise<number[]> {
         return new Promise(async (resolve, reject) => {
-                const query = `select * from ${this.tableName}`;
-                const values: number[] = [];
+            const query = `select * from ${this.tableName}`;
+            const values: number[] = [];
 
-                await this.database.each(query, (error, row) => {
-                    if (error) {
-                        reject(error);
-                        return;
-                    }
-                    values.push(row.id);
-                }, (e) => {
-                    if (!e) resolve(values);
-                });
-            }
+            await this.database.each(query, (error, row) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                values.push(row.id);
+            }, (e) => {
+                if (!e) resolve(values);
+            });
+        }
         );
 
     }
@@ -84,10 +85,10 @@ export class AdminsStorage extends Storage<number> {
 
                 this.database.serialize(() => {
                     this.database.run(`insert into ${this.tableName} values (?)`, [value],
-                        (error) => {
-                            if (error) reject(error);
-                            else resolve();
-                        }
+                    (error) => {
+                        if (error) reject(error);
+                        else resolve();
+                    }
                     );
                 });
             });

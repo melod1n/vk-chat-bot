@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {Loader} from "../../model/loader";
 import {VkMessage} from "../../model/vk-message";
 import {notImplemented} from "../base/errors";
@@ -5,11 +6,11 @@ import {vk} from "../../index";
 
 export class MessagesLoader extends Loader<VkMessage> {
 
-    async load(params: any): Promise<VkMessage[]> {
+    async load(params: never): Promise<VkMessage[]> {
         throw notImplemented;
     }
 
-    async loadSingle(params: any): Promise<VkMessage> {
+    async loadSingle(params: never): Promise<VkMessage> {
         throw notImplemented;
     }
 
