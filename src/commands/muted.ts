@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import {Command} from "../model/chat-command";
 
 class MuteAdd extends Command {

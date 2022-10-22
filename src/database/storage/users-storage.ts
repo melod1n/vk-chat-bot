@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {VkUser} from "../../model/vk-user";
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
@@ -22,7 +23,7 @@ export class UsersStorage extends Storage<VkUser> {
 
                     resolve([value]);
                 } else {
-                    let values: VkUser[] = [];
+                    const values: VkUser[] = [];
 
                     await this.database.each(query, (error, row) => {
                         if (error) {

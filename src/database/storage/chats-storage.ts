@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {Storage} from "../../model/storage";
 import {VkChat} from "../../model/vk-chat";
 
@@ -24,7 +25,7 @@ export class ChatsStorage extends Storage<VkChat> {
 
                     resolve([value]);
                 } else {
-                    let values: VkChat[] = [];
+                    const values: VkChat[] = [];
 
                     await this.database.each(query, (error, row) => {
                         if (error) {

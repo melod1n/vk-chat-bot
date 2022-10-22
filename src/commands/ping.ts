@@ -7,7 +7,7 @@ export class Ping extends Command {
     description = "bot's ping";
 
     async execute(context) {
-        let startTime = Date.now();
+        const startTime = Date.now();
 
         const waitContext = await context.send("pong");
 

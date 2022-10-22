@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import {Command} from "../model/chat-command";
 import {Utils} from "../util/utils";
 

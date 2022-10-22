@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {Loader} from "../../model/loader";
 import {VkChat} from "../../model/vk-chat";
 import {vk} from "../../index";
