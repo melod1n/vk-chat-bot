@@ -47,7 +47,7 @@ export const creatorId = Number(process.env["CREATOR_ID"]);
 export let currentGroupId: number = -1;
 const mainChatId = Number(process.env["MAIN_CHAT_ID"]);
 
-const isDebug = Boolean(process.env.DEBUG);
+const isDebug = process.env.DEBUG == "true";
 console.log(`isDebug: ${isDebug}`);
 
 export const vk = new VK({
