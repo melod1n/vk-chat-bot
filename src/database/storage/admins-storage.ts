@@ -4,6 +4,10 @@
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
 
+type Admin = {
+    id: number;
+}
+
 export class AdminsStorage extends Storage<number> {
 
     tableName = "admins";
@@ -61,7 +65,7 @@ export class AdminsStorage extends Storage<number> {
             const query = `select * from ${this.tableName}`;
             const values: number[] = [];
 
-            await this.database.each(query, (error, row) => {
+            this.database.each<Admin>(query, (error, row) => {
                 if (error) {
                     reject(error);
                     return;

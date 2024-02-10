@@ -1,13 +1,14 @@
 import {Command} from "../model/chat-command";
 import {commands, TAG_ERROR, vk} from "../index";
 import {Utils} from "../util/utils";
+import { MessageContext, ContextDefaultState } from "vk-io";
 
 export class Help extends Command {
     regexp = /^\/help/i;
     title = "/help";
     description = "this list";
 
-    async execute(context) {
+    async execute(context: MessageContext<ContextDefaultState> & object) {
         const text = `Commands:\n\n${commands.join("\n")}`;
 
         try {

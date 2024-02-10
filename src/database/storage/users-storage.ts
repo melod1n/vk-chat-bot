@@ -14,7 +14,7 @@ export class UsersStorage extends Storage<VkUser> {
                 if (ids) {
                     let value: VkUser = null;
 
-                    await this.database.each(query, [ids], (error, row) => {
+                    this.database.each(query, [ids], (error, row) => {
                         if (error) {
                             return reject(error);
                         }
@@ -25,7 +25,7 @@ export class UsersStorage extends Storage<VkUser> {
                 } else {
                     const values: VkUser[] = [];
 
-                    await this.database.each(query, (error, row) => {
+                    this.database.each(query, (error, row) => {
                         if (error) {
                             reject(error);
                             return;

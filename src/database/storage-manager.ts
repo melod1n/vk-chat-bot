@@ -1,6 +1,6 @@
 import * as fs from "fs";
-import {TAG_ERROR} from "../index";
-import {Utils} from "../util/utils";
+import { TAG_ERROR, configPath } from "../index";
+import { Utils } from "../util/utils";
 
 class Answers {
 
@@ -32,24 +32,33 @@ export class StorageManager {
     static fillAllowedIds(allowedIds: number[]) {
         this.allowedIds = allowedIds;
     }
-}
 
-loadData().then();
+    static loadData(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const answersFile = `${configPath}/answers.json`;
+            const allowedIdsFile = `${configPath}/allowed_ids.json`;
+            try {
+                if (!fs.existsSync(answersFile)) {
+                    fs.writeFileSync(answersFile, `{"testAnswers":[],"whoAnswers":[],"betterAnswers":[],"inviteAnswers":[],"kickAnswers":[]}`);
+                }
+                const answers: Answers = JSON.parse(
+                    fs.readFileSync(answersFile).toString()
+                );
 
-function loadData(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        try {
-            const answers: Answers = JSON.parse(fs.readFileSync("data/answers.json").toString());
-            const allowedIds: AllowedIds = JSON.parse(fs.readFileSync("data/allowed_ids.json").toString());
+                if (!fs.existsSync(allowedIdsFile)) {
+                    fs.writeFileSync(allowedIdsFile, `{"ids":[]}`);
+                }
 
-            StorageManager.fillAnswers(answers);
-            StorageManager.fillAllowedIds(allowedIds.ids);
+                const allowedIds: AllowedIds = JSON.parse(fs.readFileSync(allowedIdsFile).toString());
 
-            resolve();
-        } catch (e) {
-            console.error(`${TAG_ERROR} storage-manager.ts: loadData(): ${Utils.getExceptionText(e)}`);
-            reject(e);
-        }
-    });
+                StorageManager.fillAnswers(answers);
+                StorageManager.fillAllowedIds(allowedIds.ids);
 
+                resolve();
+            } catch (e) {
+                console.error(`${TAG_ERROR} storage-manager.ts: loadData(): ${Utils.getExceptionText(e)}`);
+                reject(e);
+            }
+        });
+    }
 }

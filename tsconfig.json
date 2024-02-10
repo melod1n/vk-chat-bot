@@ -8,9 +8,9 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": [
-      "reflect-metadata"
-    ],
+    // "types": [
+    //   "reflect-metadata"
+    // ],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },

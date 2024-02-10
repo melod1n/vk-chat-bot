@@ -90,3 +90,4 @@ src/index.js
 src/index.js.map
 
 .run
+.vscode/settings.json

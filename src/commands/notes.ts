@@ -2,6 +2,7 @@ import {Command, Requirement, Requirements} from "../model/chat-command";
 import {Note} from "../model/note";
 import {CacheStorage} from "../database/cache-storage";
 import {Api} from "../api/api";
+import { MessageContext, ContextDefaultState } from "vk-io";
 
 class NoteAdd extends Command {
 
@@ -10,7 +11,7 @@ class NoteAdd extends Command {
     description = "note";
     requirements = Requirements.Create(Requirement.BOT_ADMIN);
 
-    async execute(context, params): Promise<void> {
+    async execute(context: MessageContext<ContextDefaultState>, params: any[]): Promise<void> {
         const title = params[1];
         const content = context.text.split("\n")[1];
 

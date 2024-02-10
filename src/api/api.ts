@@ -3,6 +3,7 @@ import {MessageContext} from "vk-io";
 import {TAG_ERROR, vk} from "../index";
 import {Utils} from "../util/utils";
 import {MessagesEditParams, MessagesSendParams} from "vk-io/lib/api/schemas/params";
+import { MessagesDeleteFullResponse, MessagesSendUserIdsResponse } from "vk-io/lib/api/schemas/responses";
 
 export class Api {
 
@@ -19,7 +20,7 @@ export class Api {
 		disableMentions: boolean = true,
 		replyTo?: number,
 		keyboard?: string
-	): Promise<number> {
+	): Promise<MessagesSendUserIdsResponse> {
 		return new Promise((resolve, reject) => {
 			const params: MessagesSendParams = {
 				peer_id: context.peerId,
@@ -59,7 +60,7 @@ export class Api {
 		}));
 	}
 
-	static async replyMessage(context: MessageContext, message: string, keyboard?: string): Promise<number> {
+	static async replyMessage(context: MessageContext, message: string, keyboard?: string): Promise<MessagesSendUserIdsResponse> {
 		return this.sendMessage(context, message, true, context.id, keyboard);
 	}
 
@@ -69,7 +70,7 @@ export class Api {
 		});
 	}
 
-	static async deleteMessage(peerId: number, conversationMessageId: number, deleteForAll: boolean = true): Promise<boolean> {
+	static async deleteMessage(peerId: number, conversationMessageId: number, deleteForAll: boolean = true): Promise<MessagesDeleteFullResponse> {
 		return new Promise(async (resolve, reject) => {
 			await vk.api.messages.delete({
 				peer_id: peerId,

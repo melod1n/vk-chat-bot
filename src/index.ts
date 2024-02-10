@@ -1,40 +1,45 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types,no-async-promise-executor */
 import "reflect-metadata";
-import {MessageContext, VK} from "vk-io";
-import {Utils} from "./util/utils";
-import {Command, Requirement, Requirements} from "./model/chat-command";
-import {StorageManager} from "./database/storage-manager";
-import {Api} from "./api/api";
-import {Help} from "./commands/help";
-import {About} from "./commands/about";
-import {Kick} from "./commands/kick";
-import {LoadUser} from "./commands/load-user";
-import {Ping} from "./commands/ping";
-import {Random} from "./commands/random";
-import {RandomString} from "./commands/random-string";
-import {Reboot} from "./commands/reboot";
-import {Shutdown} from "./commands/shutdown";
-import {Stats} from "./commands/stats";
-import {SystemSpecs} from "./commands/system-specs";
-import {Test} from "./commands/test";
-import {Title, UserTitle} from "./commands/title";
-import {Uptime} from "./commands/uptime";
-import {WhatBetter} from "./commands/what-better";
-import {When} from "./commands/when";
-import {Who} from "./commands/who";
-import {Bat} from "./commands/bat";
-import {CacheStorage} from "./database/cache-storage";
-import {LoadManager} from "./api/load-manager";
+import { ContextDefaultState, MessageContext, MessageForwardsCollection, VK } from "vk-io";
+import { Utils } from "./util/utils";
+import { Command, Requirement, Requirements } from "./model/chat-command";
+import { StorageManager } from "./database/storage-manager";
+import { Api } from "./api/api";
+import { Help } from "./commands/help";
+import { About } from "./commands/about";
+import { Kick } from "./commands/kick";
+import { LoadUser } from "./commands/load-user";
+import { Ping } from "./commands/ping";
+import { Random } from "./commands/random";
+import { RandomString } from "./commands/random-string";
+import { Reboot } from "./commands/reboot";
+import { Shutdown } from "./commands/shutdown";
+import { Stats } from "./commands/stats";
+import { SystemSpecs } from "./commands/system-specs";
+import { Test } from "./commands/test";
+import { Title, UserTitle } from "./commands/title";
+import { Uptime } from "./commands/uptime";
+import { WhatBetter } from "./commands/what-better";
+import { When } from "./commands/when";
+import { Who } from "./commands/who";
+import { Cmd } from "./commands/cmd";
+import { CacheStorage } from "./database/cache-storage";
+import { LoadManager } from "./api/load-manager";
 import * as dotenv from "dotenv";
-import {JsonRequest} from "./commands/json-request";
-import {MemoryCache} from "./database/memory-cache";
-import {Online} from "./commands/online";
-import {Offline} from "./commands/offline";
-import {AdminAdd, AdminRemove, AdminsList} from "./commands/admins";
-import {NoteAdd} from "./commands/notes";
-import {DatabaseManager} from "./database/database-manager";
-import {Database} from "sqlite3";
-import {GroupsGroupFull} from "vk-io/lib/api/schemas/objects";
+import { JsonRequest } from "./commands/json-request";
+import { MemoryCache } from "./database/memory-cache";
+import { Online } from "./commands/online";
+import { Offline } from "./commands/offline";
+import { AdminAdd, AdminRemove, AdminsList } from "./commands/admins";
+import { NoteAdd } from "./commands/notes";
+import { DatabaseManager } from "./database/database-manager";
+import { Database } from "sqlite3";
+import * as fs from "fs";
+
+const isDocker = process.env.IS_DOCKER == "true";
+console.log(`isDocker: ${isDocker}`);
+
+export const configPath = isDocker ? '/config/data' : 'data';
 
 export const TAG = "[VKBot]";
 export const TAG_ERROR = `${TAG} [ERROR]`;
@@ -50,9 +55,16 @@ const mainChatId = Number(process.env["MAIN_CHAT_ID"]);
 const isDebug = process.env.DEBUG == "true";
 console.log(`isDebug: ${isDebug}`);
 
-export const vk = new VK({
-	token: process.env[isDebug ? "DEBUG_TOKEN" : "TOKEN"]
-});
+const predefinedApiVersion = process.env.API_VERSION
+
+export const vk = new VK(
+	predefinedApiVersion ? {
+		token: process.env[isDebug ? "DEBUG_TOKEN" : "TOKEN"],
+		apiVersion: predefinedApiVersion
+	} : {
+		token: process.env[isDebug ? "DEBUG_TOKEN" : "TOKEN"]
+	}
+);
 
 console.log(vk.api.options.apiVersion);
 
@@ -64,8 +76,11 @@ globalThis.loader = LoadManager;
 globalThis.storage = StorageManager;
 
 (async () => {
-	const groupIdResponse: GroupsGroupFull[] = await vk.api.call("groups.getById", {});
-	currentGroupId = groupIdResponse[0].id;
+	StorageManager.loadData();
+
+	const groupIdResponse = await vk.api.groups.getById({})
+
+	currentGroupId = groupIdResponse.groups[0].id;
 
 	const intervalFunction = async () => {
 		const checkUnAllowedMembersPromise = checkUnAllowedMembers();
@@ -80,6 +95,10 @@ globalThis.storage = StorageManager;
 })();
 
 vk.updates.on("message_new", async (context) => {
+	if (process.env.LOG_NEW_MESSAGES == 'true') {
+		console.log(context);
+	}
+
 	if (context.isOutbox) return;
 
 	const cmd = await searchCommand(context);
@@ -144,8 +163,18 @@ vk.updates.on("message_new", async (context) => {
 });
 
 export async function checkUnAllowedMembers(): Promise<boolean> {
+	if (process.env.KICK_UNALLOWED_MEMBERS != 'true') {
+		return false;
+	}
+
 	if (!findAndKickUnAllowedMembers) return false;
-	const chatMembers = await vk.api.messages.getConversationMembers({peer_id: 2000000000 + mainChatId});
+
+	if (!mainChatId) {
+		console.error('No MAIN_CHAT_ID provided');
+		return false;
+	}
+
+	const chatMembers = await vk.api.messages.getConversationMembers({ peer_id: 2000000000 + mainChatId });
 	const chatMembersIds = chatMembers.items.map(m => m.member_id);
 	const membersToKick = [];
 
@@ -159,7 +188,7 @@ export async function checkUnAllowedMembers(): Promise<boolean> {
 
 	for (const memberId of membersToKick) {
 		setTimeout(async () => {
-			await vk.api.messages.removeChatUser({chat_id: mainChatId, member_id: memberId}).catch(console.error);
+			await vk.api.messages.removeChatUser({ chat_id: mainChatId, member_id: memberId }).catch(console.error);
 		}, 500);
 	}
 
@@ -191,7 +220,7 @@ export class Ae extends Command {
 	requirements = Requirements.Create(Requirement.BOT_CREATOR);
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async execute(context, params, fwd, reply) {
+	async execute(context: MessageContext<ContextDefaultState>, params: any[], fwd: MessageForwardsCollection<ContextDefaultState>, reply: MessageContext<ContextDefaultState>) {
 		const match = params[1];
 
 		try {
@@ -221,7 +250,7 @@ export let commands: Command[] = [
 	new AdminsList(),
 	new AdminAdd(),
 	new AdminRemove(),
-	new Bat(),
+	new Cmd(),
 	new Ae(),
 	new Help(),
 	new Kick(),
@@ -284,7 +313,13 @@ async function sendKickUserMessage(context: MessageContext): Promise<unknown> {
 }
 
 async function setupDatabase() {
-	const db = new Database(`data/${isDebug ? "database_debug.sqlite" : "database.sqlite"}`);
+	const dbFile = `${configPath}/${isDebug ? "database_debug.sqlite" : "database.sqlite"}`
+
+	if (!fs.existsSync(dbFile)) {
+		fs.writeFileSync(dbFile, '');
+	}
+
+	const db = new Database(dbFile);
 
 	await DatabaseManager.create(db).init();
 	CacheStorage.init();
@@ -309,24 +344,24 @@ async function fillMemoryCache() {
 
 async function updateChats(): Promise<void> {
 	return new Promise(async (resolve) => {
-			const chats = await CacheStorage.chats.get();
+		const chats = await CacheStorage.chats.get();
 
-			if (chats.length == 0) {
-				resolve();
-				return;
-			}
-
-			const chatsIds: number[] = [];
-			chats.forEach(chat => chatsIds.push(chat.id));
-
-			if (chatsIds.indexOf(0) != -1) {
-				throw Error("chatsIds list contains zero value");
-			}
-
-			const loadedChats = await LoadManager.chats.load(chatsIds);
-			loadedChats.forEach(chat => MemoryCache.appendChat(chat));
-
-			console.log(`${TAG}: cached chats updated`);
+		if (chats.length == 0) {
+			resolve();
+			return;
 		}
+
+		const chatsIds: number[] = [];
+		chats.forEach(chat => chatsIds.push(chat.id));
+
+		if (chatsIds.indexOf(0) != -1) {
+			throw Error("chatsIds list contains zero value");
+		}
+
+		const loadedChats = await LoadManager.chats.load(chatsIds);
+		loadedChats.forEach(chat => MemoryCache.appendChat(chat));
+
+		console.log(`${TAG}: cached chats updated`);
+	}
 	);
 }
