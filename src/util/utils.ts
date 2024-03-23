@@ -74,3 +74,11 @@ export class Utils {
         return command1.title < command2.title ? -1 : command1.title > command2.title ? 1 : 0;
     }
 }
+
+export function requireNotNull<T>(object?: T, message?: string): T {
+    if (!object) {
+        throw Error(message ? message : "Required value is null");
+    } else {
+        return object;
+    }
+}

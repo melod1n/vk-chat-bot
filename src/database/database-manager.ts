@@ -1,4 +1,4 @@
-import { Database } from "sqlite3";
+import {Database} from "sqlite3";
 
 export let database: Database;
 
@@ -19,7 +19,6 @@ export class DatabaseManager {
         `create table if not exists ${this.adminsTable} ("id" integer primary key on conflict replace);`;
     private createMutedTable =
         `create table if not exists ${this.mutedTable} ("id" integer primary key on conflict replace)`;
-
     private constructor(newDb: Database) {
         database = newDb;
     }
@@ -34,6 +33,5 @@ export class DatabaseManager {
         database.exec(this.createNotesTable);
         database.exec(this.createAdminsTable);
         database.exec(this.createMutedTable);
-
     }
 }

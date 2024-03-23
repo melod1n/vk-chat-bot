@@ -1,7 +1,7 @@
 import {Command} from "../model/chat-command";
 import {Api} from "../api/api";
 import * as SystemInformation from "systeminformation";
-import { MessageContext, ContextDefaultState } from "vk-io";
+import {MessageContext, ContextDefaultState} from "vk-io";
 
 export class SystemSpecs extends Command {
     regexp = /^\/systemspecs/i;
@@ -25,7 +25,7 @@ export class SystemSpecs extends Command {
 
         const text = `NodeJS ${process.version}
                   OS: ${osInfo.distro}
-                  Docker: ${process.env.IS_DOCKER == 'true'}
+                  Docker: ${process.env.IS_DOCKER == "true"}
                   CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
                   RAM: ${totalRam} GB`;
 
