@@ -1,6 +1,5 @@
 export class Note {
 
-    id: number;
     title: string;
     content: string;
 
@@ -8,5 +7,4 @@ export class Note {
         this.title = title;
         this.content = content;
     }
-
 }

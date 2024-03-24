@@ -8,7 +8,7 @@ export class Kick extends Command {
     name = "/kick";
     description = "kicks user from chat";
 
-    requirements = Requirements.Create(
+    requirements = Requirements.Build(
         Requirement.CHAT,
         Requirement.BOT_CHAT_ADMIN,
         Requirement.REPLY,
@@ -24,7 +24,7 @@ export class Kick extends Command {
         if (Math.abs(message.fromId) === globalThis.id) {
             console.log(`${this.title}: fromId is bad`);
 
-            await context.reply("Нет.");
+            await Api.replyMessage(context, "Нет.");
             return;
         }
 

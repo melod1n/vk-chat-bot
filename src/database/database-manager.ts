@@ -10,15 +10,16 @@ export class DatabaseManager {
     mutedTable = "muted";
 
     private createChatsTable =
-        `create table if not exists ${this.chatsTable} ("id" integer primary key on conflict replace, "isAllowed" integer default 1, "membersCount" integer default 0, "type" text, "title" text, "adminsIds" text, "usersIds" text);`;
+        `CREATE TABLE IF NOT EXISTS ${this.chatsTable} ("id" INTEGER PRIMARY KEY ON CONFLICT REPLACE, "isAllowed" INTEGER DEFAULT 1, "membersCount" INTEGER DEFAULT 0, "type" TEXT, "title" TEXT, "adminsIds" TEXT, "usersIds" TEXT);`;
     private createUsersTable =
-        `create table if not exists ${this.usersTable} ("id" integer primary key on conflict replace, "firstName" varchar(255), "lastName" varchar(255), "isClosed" integer default 0, "photo200" varchar(255))`;
+        `CREATE TABLE IF NOT EXISTS ${this.usersTable} ("id" INTEGER PRIMARY KEY ON CONFLICT REPLACE, "firstName" VARCHAR(255), "lastName" VARCHAR(255), "isClosed" INTEGER DEFAULT 0, "photo200" VARCHAR(255))`;
     private createNotesTable =
-        `create table if not exists ${this.notesTable} ("id" integer primary key on conflict replace, "title" varchar(255), "content" text);`;
+        `CREATE TABLE IF NOT EXISTS ${this.notesTable} ("title" VARCHAR(255) PRIMARY KEY UNIQUE, "content" TEXT);`;
     private createAdminsTable =
-        `create table if not exists ${this.adminsTable} ("id" integer primary key on conflict replace);`;
+        `CREATE TABLE IF NOT EXISTS ${this.adminsTable} ("id" INTEGER PRIMARY KEY ON CONFLICT REPLACE);`;
     private createMutedTable =
-        `create table if not exists ${this.mutedTable} ("id" integer primary key on conflict replace)`;
+        `CREATE TABLE IF NOT EXISTS ${this.mutedTable} ("id" INTEGER PRIMARY KEY ON CONFLICT REPLACE)`;
+
     private constructor(newDb: Database) {
         database = newDb;
     }

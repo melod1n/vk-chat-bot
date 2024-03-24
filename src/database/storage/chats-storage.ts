@@ -1,4 +1,3 @@
-/* eslint-disable no-async-promise-executor */
 import {Storage} from "../../model/storage";
 import {VkChat} from "../../model/vk-chat";
 
@@ -7,13 +6,13 @@ export class ChatsStorage extends Storage<VkChat> {
     tableName = "chats";
 
     async get(ids?: number[]): Promise<VkChat[]> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
                 const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
 
                 if (ids) {
                     let value: VkChat = null;
 
-                    await this.database.each(query, [ids], (error, row) => {
+                    this.database.each(query, [ids], (error, row) => {
                         console.log("chat: " + row);
                         if (error) {
                             reject(error);
@@ -27,7 +26,7 @@ export class ChatsStorage extends Storage<VkChat> {
                 } else {
                     const values: VkChat[] = [];
 
-                    await this.database.each(query, (error, row) => {
+                    this.database.each(query, (error, row) => {
                         if (error) {
                             reject(error);
                             return;
@@ -47,7 +46,7 @@ export class ChatsStorage extends Storage<VkChat> {
         return new Promise((resolve, reject) => this.get([id]).then(values => resolve(values[0])).catch(reject));
     }
 
-    async store(values: VkChat[]): Promise<void> {
+    async store(values: VkChat[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
                 this.database.serialize(() => {
@@ -56,7 +55,7 @@ export class ChatsStorage extends Storage<VkChat> {
                             value.membersCount, value.getAdminIds(), value.getUsers()],
                         (error) => {
                             if (error) reject(error);
-                            else resolve();
+                            else resolve(true);
                         }
                     );
                 });
@@ -64,11 +63,11 @@ export class ChatsStorage extends Storage<VkChat> {
         });
     }
 
-    async storeSingle(value: VkChat): Promise<void> {
+    async storeSingle(value: VkChat): Promise<boolean> {
         return this.store([value]);
     }
 
-    async delete(ids: number[]): Promise<void> {
+    async delete(ids: number[]): Promise<boolean> {
         if (ids.length == 0) return;
         return new Promise((resolve, reject) => {
 
@@ -80,21 +79,21 @@ export class ChatsStorage extends Storage<VkChat> {
             this.database.serialize(() => {
                 this.database.run(query, [], (e) => {
                     if (e) reject(e);
-                    else resolve();
+                    else resolve(true);
                 });
             });
         });
     }
 
-    async deleteSingle(id: number): Promise<void> {
+    async deleteSingle(id: number): Promise<boolean> {
         return this.delete([id]);
     }
 
-    async clear(): Promise<void> {
+    async clear(): Promise<number> {
         return new Promise((resolve) => {
             this.database.serialize(() => {
                 this.database.run(`delete from ${this.tableName}`);
-                resolve();
+                resolve(0);
             });
         });
     }

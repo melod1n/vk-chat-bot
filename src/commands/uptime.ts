@@ -10,5 +10,4 @@ export class Uptime extends Command {
     async execute(context) {
         await Api.sendMessage(context, Utils.getUptime());
     }
-
 }

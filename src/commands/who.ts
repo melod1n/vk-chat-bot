@@ -11,7 +11,7 @@ export class Who extends Command {
     title = "/who [value]";
     description = "random people from chat's participants (only users)";
 
-    requirements = Requirements.Create(Requirement.CHAT, Requirement.BOT_CHAT_ADMIN);
+    requirements = Requirements.Build(Requirement.CHAT, Requirement.BOT_CHAT_ADMIN);
 
     async execute(context) {
         let waitContext: MessageContext | null = null;
@@ -19,7 +19,7 @@ export class Who extends Command {
         let chat = await MemoryCache.getChat(context.peerId);
 
         if (!chat) {
-            waitContext = await context.send("секунду");
+            waitContext = await Api.sendMessage(context, "секунду");
             chat = await LoadManager.chats.loadSingle(context.peerId);
         }
 
@@ -27,16 +27,16 @@ export class Who extends Command {
 
         if (!userId) {
             if (waitContext) {
-                await Api.editMessage(context.peerId, waitContext.conversationMessageId, "никого не нашёл :(");
+                await Api.editMessage(waitContext, "никого не нашёл :(");
             } else {
-                await context.reply("никого не нашёл :(");
+                await Api.replyMessage(context, "никого не нашёл :(");
             }
             return;
         }
 
         let user = await MemoryCache.getUser(userId);
         if (!user) {
-            if (!waitContext) waitContext = context.send("секунду...");
+            if (!waitContext) waitContext = await Api.sendMessage(context, "секунду...");
             user = await LoadManager.users.loadSingle(userId);
         }
 
@@ -52,9 +52,9 @@ export class Who extends Command {
         const whoText = `${StorageManager.answers.whoAnswers[index]} ${v} — ${text}`;
 
         if (waitContext) {
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, whoText);
+            await Api.editMessage(waitContext, whoText);
         } else {
-            await context.send(whoText);
+            await Api.sendMessage(context, whoText);
         }
     }
 }

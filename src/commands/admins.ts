@@ -28,7 +28,7 @@ class AdminsList extends Command {
             text += `❤ @id${id}(${user.firstName} ${user.lastName})\n`;
         }
 
-        await Api.sendMessage(context, text, true);
+        await Api.sendMessage(context, text);
     }
 }
 
@@ -38,7 +38,7 @@ class AdminAdd extends Command {
     title = "/addAdmin";
     description = "adds bot's admin by id or replied message";
 
-    requirements = Requirements.Create(Requirement.BOT_CREATOR);
+    requirements = Requirements.Build(Requirement.BOT_CREATOR);
 
     async execute(
         context: MessageContext,
@@ -55,7 +55,7 @@ class AdminAdd extends Command {
 
         if (userId < 0) {
             console.error(`${TAG_ERROR}: /addAdmin: groupId not allowed`);
-            await context.reply("Группу нельзя добавить администратором 🙄");
+            await Api.replyMessage(context, "Группу нельзя добавить администратором 🙄");
             return;
         }
 
@@ -73,7 +73,7 @@ class AdminAdd extends Command {
 
         if (!userId || userId < 0) {
             console.log(`${TAG_ERROR}: /addAdmin: wrong userId`);
-            await context.reply("Неверный userId.");
+            await Api.replyMessage(context, "Неверный userId.");
         } else {
             let waitContext = null;
 
@@ -84,7 +84,7 @@ class AdminAdd extends Command {
 
                 let user = await MemoryCache.getUser(userId);
                 if (!user) {
-                    waitContext = await context.send("секунду...");
+                    waitContext = await Api.sendMessage(context, "секунду...");
                     user = await LoadManager.users.loadSingle(userId);
                     if (user) await CacheStorage.users.storeSingle(user);
                 }
@@ -96,7 +96,7 @@ class AdminAdd extends Command {
                 let user = await MemoryCache.getUser(userId);
 
                 if (!user) {
-                    waitContext = await context.send("секунду...");
+                    waitContext = await Api.sendMessage(context, "секунду...");
                     user = await LoadManager.users.loadSingle(userId);
                 }
 
@@ -109,12 +109,10 @@ class AdminAdd extends Command {
             }
 
             await (waitContext ?
-                Api.editMessage(context.peerId, waitContext.conversationMessageId, message) :
+                Api.editMessage(waitContext, message) :
                 Api.sendMessage(context, message, true));
-
         }
     }
-
 }
 
 class AdminRemove extends Command {
@@ -124,7 +122,7 @@ class AdminRemove extends Command {
     name = "/removeAdmin";
     description = "removes bot's admin";
 
-    requirements = Requirements.Create(Requirement.BOT_CREATOR);
+    requirements = Requirements.Build(Requirement.BOT_CREATOR);
 
     async execute(context, params, fwd, reply): Promise<void> {
 

@@ -9,7 +9,7 @@ export class Cmd extends Command {
     name = "/cmd";
     description = "executed value in cmd";
 
-    requirements = Requirements.Create(Requirement.BOT_CREATOR);
+    requirements = Requirements.Build(Requirement.BOT_CREATOR);
 
     async execute(context: MessageContext<ContextDefaultState>, params: any[]) {
         const text = params[1];
@@ -17,5 +17,4 @@ export class Cmd extends Command {
         const result = await Utils.executeCommand(text);
         await Api.sendMessage(context, result);
     }
-
 }

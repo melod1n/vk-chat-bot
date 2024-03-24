@@ -17,7 +17,6 @@ export class WhatBetter extends Command {
 
         const text = `${StorageManager.answers.betterAnswers[Utils.getRandomInt(StorageManager.answers.betterAnswers.length)]} ${better}`;
 
-        await Api.sendMessage(context, text, true);
+        await Api.sendMessage(context, text);
     }
-
 }

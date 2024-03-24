@@ -11,7 +11,7 @@ class Title extends Command {
     name = "/title";
     description = "changes current chat's title";
 
-    requirements = Requirements.Create(
+    requirements = Requirements.Build(
         Requirement.CHAT,
         Requirement.BOT_CHAT_ADMIN,
         Requirement.BOT_ADMIN
@@ -28,7 +28,7 @@ class UserTitle extends Command {
     name = "/userTitle";
     description = "changes chat's photo and title to user's";
 
-    requirements = Requirements.Create(
+    requirements = Requirements.Build(
         Requirement.CHAT,
         Requirement.BOT_CHAT_ADMIN,
         Requirement.BOT_ADMIN
@@ -37,7 +37,7 @@ class UserTitle extends Command {
     async execute(context, params) {
         const userId = Number(params[1]);
 
-        const waitContext: MessageContext = await context.send("секунду...");
+        const waitContext: MessageContext = await Api.sendMessage(context, "секунду...");
 
         try {
             let user = await MemoryCache.getUser(userId);
@@ -59,7 +59,7 @@ class UserTitle extends Command {
             }
 
             await Api.changeChatTitle(context, fullName);
-            await Api.deleteMessage(context.peerId, waitContext.conversationMessageId);
+            await Api.deleteMessage(context);
         } catch (e) {
             console.error(e);
 
@@ -67,7 +67,7 @@ class UserTitle extends Command {
                 e.code == 100 ? "Неверный id пользователя 😠"
                     : "Произошла ошибка 😖";
 
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, errorText);
+            await Api.editMessage(waitContext, errorText);
         }
 
     }

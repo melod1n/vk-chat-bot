@@ -1,6 +1,3 @@
-/* eslint-disable no-async-promise-executor,@typescript-eslint/no-unused-vars */
-// noinspection JSUnusedGlobalSymbols
-
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
 
@@ -12,32 +9,7 @@ export class AdminsStorage extends Storage<number> {
 
     tableName = "admins";
 
-    async checkIfStored(id: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            if (id <= 0) {
-                reject();
-                return;
-            }
-
-            try {
-                const values = await this.get();
-                let stored = false;
-
-                for (const value of values) {
-                    if (value == id) {
-                        stored = true;
-                        break;
-                    }
-                }
-
-                resolve(stored);
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }
-
-    async delete(ids: number[]): Promise<void> {
+    async delete(ids: number[]): Promise<boolean> {
         if (ids.length == 0) return;
         return new Promise((resolve, reject) => {
             MemoryCache.clearAdmins();
@@ -50,40 +22,41 @@ export class AdminsStorage extends Storage<number> {
             this.database.serialize(() => {
                 this.database.run(query, [], (e) => {
                     if (e) reject(e);
-                    else resolve();
+                    else resolve(true);
                 });
             });
         });
     }
 
-    async deleteSingle(userId: number): Promise<void> {
+    async deleteSingle(userId: number): Promise<boolean> {
         return this.delete([userId]);
     }
 
     async get(): Promise<number[]> {
-        return new Promise(async (resolve, reject) => {
-            const query = `select * from ${this.tableName}`;
-            const values: number[] = [];
+        return new Promise((resolve, reject) => {
+                const query = `select * from ${this.tableName}`;
+                const values: number[] = [];
 
-            this.database.each<Admin>(query, (error, row) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                values.push(row.id);
-            }, (e) => {
-                if (!e) resolve(values);
-            });
-        }
+                this.database.each<Admin>(query, (error, row) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    values.push(row.id);
+                }, (e) => {
+                    if (!e) resolve(values);
+                });
+            }
         );
 
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getSingle(params?: unknown): Promise<number> {
         return Promise.resolve(0);
     }
 
-    async store(values: number[]): Promise<void> {
+    async store(values: number[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
                 if (!MemoryCache.includesAdmin(value))
@@ -91,33 +64,28 @@ export class AdminsStorage extends Storage<number> {
 
                 this.database.serialize(() => {
                     this.database.run(`insert into ${this.tableName} values (?)`, [value],
-                    (error) => {
-                        if (error) reject(error);
-                        else resolve();
-                    }
+                        (error) => {
+                            if (error) reject(error);
+                            else resolve(true);
+                        }
                     );
                 });
             });
         });
     }
 
-    async storeSingle(value: number): Promise<void> {
+    async storeSingle(value: number): Promise<boolean> {
         return this.store([value]);
     }
 
-    async clear(): Promise<void> {
+    async clear(): Promise<number> {
         return new Promise((resolve) => {
             MemoryCache.clearAdmins();
 
             this.database.serialize(() => {
                 this.database.run(`delete from ${this.tableName}`);
-                resolve();
+                resolve(0);
             });
         });
     }
-
-    fill(row: unknown): number {
-        return 0;
-    }
-
 }

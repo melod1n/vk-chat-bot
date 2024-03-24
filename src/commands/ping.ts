@@ -9,14 +9,12 @@ export class Ping extends Command {
     async execute(context) {
         const startTime = Date.now();
 
-        const waitContext = await context.send("pong");
+        const waitContext = await Api.sendMessage(context, "pong");
 
         const nowMillis = Date.now();
 
         const change = Math.abs(nowMillis - startTime);
 
-        await Api.editMessage(context.peerId, waitContext.conversationMessageId, `ping: ~${change} ms`);
+        await Api.editMessage(waitContext, `ping: ~${change} ms`);
     }
-
-
 }

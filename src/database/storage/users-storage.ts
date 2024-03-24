@@ -1,4 +1,3 @@
-/* eslint-disable no-async-promise-executor */
 import {VkUser} from "../../model/vk-user";
 import {Storage} from "../../model/storage";
 import {MemoryCache} from "../memory-cache";
@@ -8,7 +7,7 @@ export class UsersStorage extends Storage<VkUser> {
     tableName = "users";
 
     async get(ids?: number[]): Promise<VkUser[]> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
                 const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
 
                 if (ids) {
@@ -44,7 +43,7 @@ export class UsersStorage extends Storage<VkUser> {
         return new Promise((resolve, reject) => this.get([id]).then(values => resolve(values[0])).catch(reject));
     }
 
-    async store(values: VkUser[]): Promise<void> {
+    async store(values: VkUser[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
             values.forEach(value => {
                 MemoryCache.appendUser(value);
@@ -52,17 +51,17 @@ export class UsersStorage extends Storage<VkUser> {
                     [value.id, value.firstName, value.lastName, value.isClosed, value.photo200],
                     (error) => {
                         if (error) reject(error);
-                        else resolve();
+                        else resolve(true);
                     });
             });
         });
     }
 
-    async storeSingle(value: VkUser): Promise<void> {
+    async storeSingle(value: VkUser): Promise<boolean> {
         return this.store([value]);
     }
 
-    async delete(ids: number[]): Promise<void> {
+    async delete(ids: number[]): Promise<boolean> {
         if (ids.length == 0) return;
         return new Promise((resolve, reject) => {
 
@@ -74,21 +73,21 @@ export class UsersStorage extends Storage<VkUser> {
             this.database.serialize(() => {
                 this.database.run(query, [], (e) => {
                     if (e) reject(e);
-                    else resolve();
+                    else resolve(true);
                 });
             });
         });
     }
 
-    async deleteSingle(id: number): Promise<void> {
+    async deleteSingle(id: number): Promise<boolean> {
         return this.delete([id]);
     }
 
-    async clear(): Promise<void> {
+    async clear(): Promise<number> {
         return new Promise((resolve) => {
             this.database.serialize(() => {
                 this.database.run(`delete from ${this.tableName}`);
-                resolve();
+                resolve(0);
             });
         });
     }
@@ -104,6 +103,4 @@ export class UsersStorage extends Storage<VkUser> {
 
         return user;
     }
-
-
 }

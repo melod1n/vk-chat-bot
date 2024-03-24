@@ -9,10 +9,10 @@ export class Online extends Command {
     name = "/online";
     description = "users who online";
 
-    requirements = Requirements.Create(Requirement.CHAT);
+    requirements = Requirements.Build(Requirement.CHAT);
 
     async execute(context): Promise<void> {
-        const waitContext = await context.send("секунду...");
+        const waitContext = await Api.sendMessage(context, "секунду...");
 
         const users = (await LoadManager.chats.loadSingle(context.peerId)).users;
         const allCount = users.length;
@@ -37,7 +37,6 @@ export class Online extends Command {
             text += `\n(Пользователей, скрывших онлайн: ${hiddenOnlineUsers.length})`;
         }
 
-        await Api.editMessage(context.peerId, waitContext.conversationMessageId, text);
+        await Api.editMessage(waitContext, text);
     }
-
 }

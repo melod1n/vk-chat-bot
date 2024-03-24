@@ -47,7 +47,7 @@ export class StorageManager {
 
             try {
                 if (!fs.existsSync(answersFile)) {
-                    fs.writeFileSync(answersFile, `{"testAnswers":[],"whoAnswers":[],"betterAnswers":[],"inviteAnswers":[],"kickAnswers":[]}`);
+                    fs.writeFileSync(answersFile, `{"testAnswers":["шо"],"whoAnswers":[],"betterAnswers":[],"inviteAnswers":[],"kickAnswers":[]}`);
                 }
                 const answers: Answers = JSON.parse(
                     fs.readFileSync(answersFile).toString()

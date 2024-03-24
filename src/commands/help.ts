@@ -2,6 +2,7 @@ import {Command} from "../model/chat-command";
 import {commands, TAG_ERROR, vk} from "../index";
 import {Utils} from "../util/utils";
 import { MessageContext, ContextDefaultState } from "vk-io";
+import {Api} from "../api/api";
 
 export class Help extends Command {
     regexp = /^\/help/i;
@@ -18,14 +19,14 @@ export class Help extends Command {
                 random_id: 0
             }).then(async () => {
                 if (!context.isChat) return;
-                await context.reply("Отправил команды в ЛС 😎");
+                await Api.replyMessage(context, "Отправил команды в ЛС 😎");
             });
         } catch (e) {
             console.error(`${TAG_ERROR}: help.ts: ${Utils.getExceptionText(e)}`);
             if (e.code == 901) {
-                await context.reply("Разрешите мне писать Вам сообщения 🥺");
+                await Api.replyMessage(context, "Разрешите мне писать Вам сообщения 🥺");
             } else {
-                await context.reply("Не смог отправить команды в ЛС ☹");
+                await Api.replyMessage(context, "Не смог отправить команды в ЛС ☹");
             }
         }
     }

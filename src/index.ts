@@ -31,10 +31,11 @@ import {MemoryCache} from "./database/memory-cache";
 import {Online} from "./commands/online";
 import {Offline} from "./commands/offline";
 import {AdminAdd, AdminRemove, AdminsList} from "./commands/admins";
-import {NoteAdd} from "./commands/notes";
+import {NoteAdd, NoteDelete, NoteInfo, NotesClear, NotesList} from "./commands/notes";
 import {DatabaseManager} from "./database/database-manager";
 import {Database} from "sqlite3";
 import * as fs from "fs";
+import {BOT_VERSION} from "./common/constants";
 
 const isDocker = process.env.IS_DOCKER == "true";
 console.log(`isDocker: ${isDocker}`);
@@ -68,7 +69,7 @@ export const vk = new VK(
     }
 );
 
-console.log(vk.api.options.apiVersion);
+console.log(`VK API v. ${vk.api.options.apiVersion}`);
 
 //for /ae command   
 globalThis.vk = vk;
@@ -210,6 +211,7 @@ vk.updates.on("chat_kick_user", async (context) => {
 });
 
 vk.updates.start().catch(console.error).then(async () => {
+    console.log(`Bot v. ${BOT_VERSION}`);
     const msg = "bot is ready ;)";
     console.log(msg);
 });
@@ -220,7 +222,7 @@ export class Ae extends Command {
     name = "/ae";
     description = "js eval";
 
-    requirements = Requirements.Create(Requirement.BOT_CREATOR);
+    requirements = Requirements.Build(Requirement.BOT_CREATOR);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
     async execute(context: MessageContext<ContextDefaultState>, params: any[], _fwd: MessageForwardsCollection<ContextDefaultState>, _reply: MessageContext<ContextDefaultState>) {
@@ -275,7 +277,11 @@ export let commands: Command[] = [
     new JsonRequest(),
     new Online(),
     new Offline(),
-    new NoteAdd()
+    new NotesList(),
+    new NoteAdd(),
+    new NoteInfo(),
+    new NoteDelete(),
+    new NotesClear()
 ];
 
 commands.sort(Utils.compareCommands);
@@ -297,8 +303,7 @@ async function sendInviteUserMessage(context: MessageContext): Promise<unknown> 
     if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
-        Api.sendMessage(
-            context,
+        Api.sendMessage(context,
             `@id${context.eventMemberId}(${StorageManager.answers.inviteAnswers[Utils.getRandomInt(StorageManager.answers.inviteAnswers.length)]})`
         ).catch(reject).then(resolve);
     });
@@ -308,8 +313,7 @@ async function sendKickUserMessage(context: MessageContext): Promise<unknown> {
     if (context.eventMemberId < 0) return;
 
     return new Promise((resolve, reject) => {
-        Api.sendMessage(
-            context,
+        Api.sendMessage(context,
             `@id${context.eventMemberId}(${StorageManager.answers.kickAnswers[Utils.getRandomInt(StorageManager.answers.kickAnswers.length)]})`
         ).catch(reject).then(resolve);
     });

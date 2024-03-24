@@ -7,15 +7,11 @@ export class MutedStorage extends Storage<number> {
 
     tableName = "muted";
 
-    checkIfStored(params: any): Promise<boolean> {
-        return Promise.resolve(false);
-    }
-
-    delete(params: any): Promise<void> {
+    delete(params: any): Promise<boolean> {
         return Promise.resolve(undefined);
     }
 
-    deleteSingle(params: any): Promise<void> {
+    deleteSingle(params: any): Promise<boolean> {
         return Promise.resolve(undefined);
     }
 
@@ -27,20 +23,19 @@ export class MutedStorage extends Storage<number> {
         return Promise.resolve(0);
     }
 
-    store(values: number[]): Promise<void> {
+    store(values: number[]): Promise<boolean> {
         return Promise.resolve(undefined);
     }
 
-    storeSingle(value: number): Promise<void> {
+    storeSingle(value: number): Promise<boolean> {
         return Promise.resolve(undefined);
     }
 
-    clear(): Promise<void> {
+    clear(): Promise<number> {
         return Promise.resolve(undefined);
     }
 
     fill(row: any): number {
         return 0;
     }
-
 }

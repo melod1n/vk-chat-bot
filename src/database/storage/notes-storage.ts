@@ -1,140 +1,146 @@
 /* eslint-disable no-async-promise-executor */
-import {Storage} from "../../model/storage";
+import {KeyStorage} from "../../model/storage";
 import {Note} from "../../model/note";
 import {MemoryCache} from "../memory-cache";
 
-export class NotesStorage extends Storage<Note> {
+export class NotesStorage extends KeyStorage<Note, string> {
 
     tableName = "notes";
 
-    checkIfStored(id: number): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            if (id <= 0) {
-                reject();
-                return;
-            }
-
-            try {
-                const values = await this.get();
-                let stored = false;
-
-                for (const value of values) {
-                    if (value.id == id) {
-                        stored = true;
-                        break;
-                    }
-                }
-
-                resolve(stored);
-            } catch (e) {
-                reject(e);
-            }
-        });
-    }
-
-    delete(ids: number[]): Promise<void> {
-        if (ids.length == 0) return;
-        return new Promise((resolve, reject) => {
-
-            let query = `delete from ${this.tableName} where id = ${ids[0]}`;
-            for (let i = 1; i < ids.length; i++) {
-                query += " or ";
-                query += `id = ${ids[i]}`;
-            }
-            this.database.serialize(() => {
-                this.database.run(query, [], (e) => {
-                    if (e) reject(e);
-                    else resolve();
-                });
-            });
-        });
-    }
-
-    deleteSingle(id: number): Promise<void> {
-        return this.delete([id]);
-    }
-
-    get(ids?: number[]): Promise<Note[]> {
+    get(titles?: string[]): Promise<Note[]> {
         return new Promise((resolve, reject) => {
             this.database.serialize(async () => {
-                    const query = `select * from ${this.tableName}` + (ids ? " where id = (?)" : "");
+                    if (titles) {
+                        const titlesForQuery = titles.map(title => `'${title}'`).join(",");
 
-                    if (ids) {
-                        let value: Note = null;
-
-                        await this.database.each(query, [ids], (error, row) => {
+                        this.database.all<Note>(`SELECT * FROM ${this.tableName} WHERE title IN (${titlesForQuery})`, function (error, row) {
                             if (error) {
-                                return reject(error);
+                                reject(error);
+                                console.error(error);
+                            } else {
+                                resolve(row);
                             }
-                            value = this.fill(row);
                         });
-
-                        resolve([value]);
                     } else {
-                        const values: Note[] = [];
-
-                        await this.database.each(query, (error, row) => {
+                        this.database.all<Note>(`SELECT * FROM ${this.tableName}`, (error, rows) => {
                             if (error) {
-                                return reject(error);
+                                reject(error);
+                                console.error(error);
+                            } else {
+                                resolve(rows);
                             }
-                            values.push(this.fill(row));
                         });
-
-                        resolve(values);
                     }
                 }
             );
         });
     }
 
-    getSingle(id: number): Promise<Note> {
+    getSingle(title: string): Promise<Note | null> {
         return new Promise((resolve, reject) => {
-            this.get([id]).then(values => resolve(values[0])).catch(reject);
+            this.database.serialize(() => {
+                this.database.get<Note>(`SELECT * FROM ${this.tableName} WHERE title = (?)`, title, function (error, row) {
+                    if (error) {
+                        reject(error);
+                        console.error(error);
+                    } else {
+                        resolve(row);
+                    }
+                });
+            });
         });
     }
 
-    store(values: Note[]): Promise<void> {
+    delete(titles: string[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            values.forEach(value => {
-                if (!MemoryCache.includesNote(value)) {
-                    MemoryCache.appendNote(value);
+            this.database.run("BEGIN TRANSACTION");
 
-                    this.database.serialize(() => {
-                        this.database.run(`insert into ${this.tableName} (title, content) values(?, ?)`,
-                            [value.title, value.content],
-                            (error) => {
-                                if (error) reject(error);
-                                else resolve();
-                            }
-                        );
+            const statement = this.database.prepare(`DELETE FROM ${this.tableName} WHERE title = (?)`);
+
+            let changesCount = 0;
+
+            titles.forEach(title => {
+                statement.run([title], function (error) {
+                    if (error) {
+                        reject(error);
+                        console.error(error);
+                        return;
+                    }
+
+                    changesCount += this.changes;
+                });
+            });
+
+            statement.finalize(() => {
+                this.database.run("COMMIT", (error) => {
+                    if (error) {
+                        reject(error);
+                        console.error(error);
+                    } else {
+                        resolve(changesCount == titles.length);
+                    }
+                });
+            });
+        });
+    }
+
+    deleteSingle(title: string): Promise<boolean> {
+        return this.delete([title]);
+    }
+
+    store(values: Note[]): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            this.database.run("BEGIN TRANSACTION");
+
+            const statement = this.database.prepare(`INSERT INTO ${this.tableName} (title, content) VALUES (?, ?)`);
+
+            let changesCount = 0;
+
+            values.forEach(note => {
+                if (!MemoryCache.includesNote(note)) {
+                    MemoryCache.appendNote(note);
+
+                    statement.run([note.title, note.content], function (error) {
+                        if (error) {
+                            reject(error);
+                            console.error(error);
+                            return;
+                        }
+
+                        changesCount += this.changes;
                     });
                 }
             });
-        });
-    }
 
-    storeSingle(value: Note): Promise<void> {
-        return this.store([value]);
-    }
-
-    clear(): Promise<void> {
-        return new Promise((resolve) => {
-            this.database.serialize(() => {
-                this.database.run(`delete from ${this.tableName}`);
-                resolve();
+            statement.finalize(() => {
+                this.database.run("COMMIT", (error) => {
+                    if (error) {
+                        reject(error);
+                        console.error(error);
+                    } else {
+                        resolve(changesCount == values.length);
+                    }
+                });
             });
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fill(row: any): Note {
-        const note = new Note();
-
-        note.id = row.id;
-        note.title = row.title;
-        note.content = row.content;
-
-        return note;
+    storeSingle(value: Note): Promise<boolean> {
+        return this.store([value]);
     }
 
+    clear(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            this.database.serialize(() => {
+                this.database.run(`DELETE FROM ${this.tableName}`, function (error) {
+                    if (error) {
+                        reject(error);
+                        console.error(error);
+                    } else {
+                        resolve(this.changes);
+                    }
+                });
+            });
+        });
+    }
 }

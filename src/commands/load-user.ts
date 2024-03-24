@@ -8,17 +8,17 @@ export class LoadUser extends Command {
     name = "/loadUser";
     description = "user from vk api by it's id";
 
-    requirements = Requirements.Create(Requirement.BOT_ADMIN);
+    requirements = Requirements.Build(Requirement.BOT_ADMIN);
 
     async execute(context, params) {
-        const waitContext = await context.send("секунду...");
+        const waitContext = await Api.sendMessage(context, "секунду...");
 
         try {
             const user = await LoadManager.users.loadSingle(Number(params[1]));
 
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, JSON.stringify(user));
+            await Api.editMessage(waitContext, JSON.stringify(user));
         } catch (e) {
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, "Произошла ошибка 😥");
+            await Api.editMessage(waitContext, "Произошла ошибка 😥");
         }
     }
 }

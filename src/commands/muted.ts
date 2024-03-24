@@ -13,5 +13,4 @@ class MuteAdd extends Command {
 
         });
     }
-
 }

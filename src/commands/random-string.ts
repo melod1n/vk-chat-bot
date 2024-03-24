@@ -1,6 +1,7 @@
 import {Command} from "../model/chat-command";
 import {Utils} from "../util/utils";
 import {creatorId} from "../index";
+import {Api} from "../api/api";
 
 const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789";
 
@@ -21,6 +22,6 @@ export class RandomString extends Command {
             result += CHARACTERS.charAt(Utils.getRandomInt(CHARACTERS.length));
         }
 
-        await context.send(result);
+        await Api.sendMessage(context, result);
     }
 }

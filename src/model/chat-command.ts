@@ -5,7 +5,7 @@ abstract class Command {
     abstract regexp: RegExp;
     abstract title: string;
     abstract description: string;
-    requirements = Requirements.Create();
+    requirements = Requirements.Build();
 
     abstract execute(
         context: MessageContext,
@@ -35,7 +35,7 @@ class Requirements {
         this.requirements = requirements;
     }
 
-    static Create(...requirements: Requirement[]): Requirements {
+    static Build(...requirements: Requirement[]): Requirements {
         return new Requirements(requirements);
     }
 

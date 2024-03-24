@@ -17,5 +17,4 @@ export class Random extends Command {
 
         await Api.sendMessage(context, randomText);
     }
-
 }

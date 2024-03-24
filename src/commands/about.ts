@@ -2,6 +2,9 @@ import {Command} from "../model/chat-command";
 import {TAG_ERROR, vk} from "../index";
 import {StorageManager} from "../database/storage-manager";
 import {Utils} from "../util/utils";
+import {Api} from "../api/api";
+import {BOT_VERSION} from "../common/constants";
+import { MessageContext, ContextDefaultState } from "vk-io";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dependencies = require("./../../package.json").dependencies;
@@ -11,14 +14,16 @@ export class About extends Command {
     title = "/about";
     description = "information about this bot";
 
-    async execute(context) {
+    async execute(context: MessageContext) {
         const depsKeys = Object.keys(dependencies);
         const depsValues = [];
         depsKeys.forEach(key => {
             depsValues.push(dependencies[key]);
         });
 
-        let aboutText = `VK API v. ${vk.api.options.apiVersion}`;
+        let aboutText = `\nВерсия бота: ${BOT_VERSION}`;
+
+        aboutText += `\n\nVK API v. ${vk.api.options.apiVersion}`;
 
         aboutText += "\n\nОтветы: \n";
         aboutText += `* Тест: ${StorageManager.answers.testAnswers.length} ответов\n`;
@@ -45,14 +50,14 @@ export class About extends Command {
                 disable_mentions: true
             }).then(async () => {
                 if (!context.isChat) return;
-                await context.reply("Отправил информацию в ЛС 😎");
+                await Api.replyMessage(context, "Отправил информацию в ЛС 😎");
             });
         } catch (e) {
             console.error(`${TAG_ERROR}: about.ts: ${Utils.getExceptionText(e)}`);
             if (e.code == 901) {
-                await context.reply("Разрешите мне писать Вам сообщения 🥺");
+                await Api.replyMessage(context, "Разрешите мне писать Вам сообщения 🥺");
             } else {
-                await context.reply("Не смог отправить информацию в ЛС ☹");
+                await Api.replyMessage(context, "Не смог отправить информацию в ЛС ☹");
             }
         }
     }

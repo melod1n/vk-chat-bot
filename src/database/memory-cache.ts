@@ -53,15 +53,6 @@ export class MemoryCache {
         return null;
     }
 
-    static searchNoteIndex(noteId: number): number | null {
-        for (let i = 0; i < this.notesSize(); i++) {
-            const storedNote = this.getNoteByIndex(i);
-            if (storedNote.id == noteId) return i;
-        }
-
-        return null;
-    }
-
     static clearUsers() {
         this.users = [];
     }
@@ -106,7 +97,7 @@ export class MemoryCache {
 
     static includesNote(note: Note): boolean {
         for (const storedNote of this.notes) {
-            if (storedNote.id == note.id) return true;
+            if (storedNote.title == note.title) return true;
         }
 
         return false;
@@ -204,24 +195,4 @@ export class MemoryCache {
             }
         });
     }
-
-    static getNote(noteId: number): Promise<Note | null> {
-        return new Promise((resolve, reject) => {
-            let found = false;
-            for (const storedNote of this.notes) {
-                if (storedNote.id == noteId) {
-                    found = true;
-                    resolve(storedNote);
-                }
-            }
-
-            if (!found) {
-                CacheStorage.notes.getSingle(noteId).then(note => {
-                    resolve(note);
-                    this.appendNote(note);
-                }).catch(reject);
-            }
-        });
-    }
-
 }

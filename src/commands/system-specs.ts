@@ -1,7 +1,9 @@
 import {Command} from "../model/chat-command";
 import {Api} from "../api/api";
 import * as SystemInformation from "systeminformation";
-import {MessageContext, ContextDefaultState} from "vk-io";
+import {ContextDefaultState, MessageContext} from "vk-io";
+
+let specsText: string = null;
 
 export class SystemSpecs extends Command {
     regexp = /^\/systemspecs/i;
@@ -9,7 +11,12 @@ export class SystemSpecs extends Command {
     description = "current hardware specs";
 
     async execute(context: MessageContext<ContextDefaultState> & object) {
-        const newContext = await context.send("секунду...");
+        if (specsText) {
+            await Api.sendMessage(context, specsText);
+            return;
+        }
+
+        const waitContext = await Api.sendMessage(context, "секунду...");
 
         const systemInfo = await Promise.all([
             SystemInformation.osInfo(),
@@ -23,12 +30,12 @@ export class SystemSpecs extends Command {
 
         const totalRam = Math.round(memoryInfo.total / Math.pow(2, 30));
 
-        const text = `NodeJS ${process.version}
-                  OS: ${osInfo.distro}
-                  Docker: ${process.env.IS_DOCKER == "true"}
-                  CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
-                  RAM: ${totalRam} GB`;
+        specsText = `NodeJS ${process.version}
+                     OS: ${osInfo.distro}
+                     Docker: ${process.env.IS_DOCKER == "true"}
+                     CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
+                     RAM: ${totalRam} GB`;
 
-        await Api.editMessage(context.peerId, newContext.conversationMessageId, text);
+        await Api.editMessage(waitContext, specsText);
     }
 }

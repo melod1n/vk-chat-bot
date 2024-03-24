@@ -8,24 +8,24 @@ export class JsonRequest extends Command {
     title = "/json";
     description = "retrieved json from url";
 
-    requirements = Requirements.Create(Requirement.BOT_ADMIN);
+    requirements = Requirements.Build(Requirement.BOT_ADMIN);
 
     async execute(context, params) {
         let url = params[1];
         if (!url.includes("http") && !url.includes("///")) url = `https://${url}`;
 
-        const waitContext = await context.send("секунду...");
+        const waitContext = await Api.sendMessage(context, "секунду...");
 
         try {
             const f = (await fetch(url));
             const js = await f.json();
             const result = (JSON.stringify(js, null, 2));
 
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, result);
+            await Api.editMessage(waitContext, result);
         } catch (e) {
             console.error(`${TAG_ERROR} json-request.ts: ${Utils.getExceptionText(e)}`);
 
-            await Api.editMessage(context.peerId, waitContext.conversationMessageId, "Произошла ошибка 😞");
+            await Api.editMessage(waitContext, "Произошла ошибка 😞");
         }
     }
 }

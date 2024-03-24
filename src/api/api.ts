@@ -3,7 +3,6 @@ import {MessageContext} from "vk-io";
 import {TAG_ERROR, vk} from "../index";
 import {Utils} from "../util/utils";
 import {MessagesEditParams, MessagesSendParams} from "vk-io/lib/api/schemas/params";
-import {MessagesDeleteFullResponse, MessagesSendUserIdsResponse} from "vk-io/lib/api/schemas/responses";
 import {incrementSentMessages} from "../commands/stats";
 
 export class Api {
@@ -19,43 +18,55 @@ export class Api {
         context: MessageContext,
         message?: string,
         disableMentions: boolean = true,
-        replyTo?: number,
         keyboard?: string
-    ): Promise<MessagesSendUserIdsResponse> {
-        return new Promise((resolve, reject) => {
-            const params: MessagesSendParams = {
-                peer_id: context.peerId,
-                random_id: 0,
-                disable_mentions: disableMentions
-            };
+    ): Promise<MessageContext> {
+        const params: MessagesSendParams = {disable_mentions: disableMentions};
 
-            if (message) params["message"] = message;
-            if (replyTo) params["reply_to"] = replyTo;
-            if (keyboard) params["keyboard"] = keyboard;
+        if (keyboard) params["keyboard"] = keyboard;
 
-            vk.api.messages.send(params).then(async (id) => {
-                resolve(id);
+        return new Promise(async (resolve, reject) => {
+            context.send(message, params).then(r => {
                 incrementSentMessages();
+                resolve(r);
+            }).catch(reject);
+        });
+    }
+
+    static async replyMessage(
+        context: MessageContext,
+        message?: string,
+        disableMentions: boolean = true,
+        keyboard?: string
+    ): Promise<MessageContext> {
+        const params: MessagesSendParams = {disable_mentions: disableMentions};
+
+        if (keyboard) params["keyboard"] = keyboard;
+
+        return new Promise(async (resolve, reject) => {
+            context.reply(message, params).then(r => {
+                incrementSentMessages();
+                resolve(r);
             }).catch(reject);
         });
     }
 
     static async editMessage(
-        peerId: number,
-        conversationMessageId: number,
+        context: MessageContext,
         newText: string,
-        disableMentions: boolean = true
+        disableMentions: boolean = true,
+        keyboard?: string
     ): Promise<boolean> {
         return new Promise(((resolve, reject) => {
             const params: MessagesEditParams = {
-                peer_id: peerId,
-                conversation_message_id: conversationMessageId,
+                peer_id: context.peerId,
                 message: newText,
                 disable_mentions: disableMentions
             };
 
-            vk.api.messages.edit(params).then((response) => {
-                if (response == 1) resolve(true);
+            if (keyboard) params["keyboard"] = keyboard;
+
+            context.editMessage(params).then(r => {
+                if (r == 1) resolve(true);
                 else reject(false);
             }).catch(e => {
                 console.error(`${TAG_ERROR}: ${Utils.getExceptionText(e)}`);
@@ -64,9 +75,6 @@ export class Api {
         }));
     }
 
-    static async replyMessage(context: MessageContext, message: string, keyboard?: string): Promise<MessagesSendUserIdsResponse> {
-        return this.sendMessage(context, message, true, context.id, keyboard);
-    }
 
     static async changeChatTitle(context: MessageContext, title: string): Promise<unknown> {
         return new Promise((resolve, reject) => {
@@ -74,13 +82,15 @@ export class Api {
         });
     }
 
-    static async deleteMessage(peerId: number, conversationMessageId: number, deleteForAll: boolean = true): Promise<MessagesDeleteFullResponse> {
-        return new Promise(async (resolve, reject) => {
-            await vk.api.messages.delete({
-                peer_id: peerId,
-                conversation_message_ids: [conversationMessageId],
-                delete_for_all: deleteForAll
-            }).then(resolve).catch(reject);
+    static async deleteMessage(context: MessageContext, deleteForAll: boolean = true): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            context.deleteMessage({delete_for_all: deleteForAll}).then(resolve).catch(reject);
+
+            // await vk.api.messages.delete({
+            //     peer_id: peerId,
+            //     conversation_message_ids: [conversationMessageId],
+            //     delete_for_all: deleteForAll
+            // }).then(resolve).catch(reject);
         });
     }
 }

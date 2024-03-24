@@ -3,26 +3,27 @@
 import {database} from "../database/database-manager";
 import {Database} from "sqlite3";
 
-export abstract class Storage<T> {
+export abstract class Storage<Item> {
 
     database: Database = database;
 
     protected abstract tableName: string;
 
-    abstract get(params?: unknown): Promise<T[]>;
+    abstract get(params?: unknown): Promise<Item[]>;
 
-    abstract getSingle(params?: unknown): Promise<T>;
+    abstract getSingle(params?: unknown): Promise<Item | null>;
 
-    abstract store(values: T[]): Promise<void>;
+    abstract store(values: Item[]): Promise<boolean>;
 
-    abstract storeSingle(value: T): Promise<void>;
+    abstract storeSingle(value: Item): Promise<boolean>;
 
-    abstract delete(params?: unknown): Promise<void>;
+    abstract delete(params?: unknown): Promise<boolean>;
 
-    abstract deleteSingle(params?: unknown): Promise<void>;
+    abstract deleteSingle(params?: unknown): Promise<boolean>;
 
-    abstract clear(): Promise<void>;
+    abstract clear(): Promise<number>;
+}
 
-    abstract fill(row: unknown): T;
+export abstract class KeyStorage<Item, Identificator> extends Storage<Item> {
 
 }
