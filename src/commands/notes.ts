@@ -31,14 +31,15 @@ class NotesList extends Command {
 
 class NoteAdd extends Command {
 
-    regexp = /^\/note\s([^]+)\n/i;
-    title = "/note [title]\n[content]";
+    regexp = /^\/noteadd\s([^]+)/i;
+    title = "/noteadd [title]\\n[content]";
     description = "Add note";
     requirements = Requirements.Build(Requirement.BOT_ADMIN);
 
     async execute(context: MessageContext<ContextDefaultState>, params: string[]): Promise<void> {
-        const title = params[1].trim();
-        const content = context.text.split("\n")[1];
+        const split = params[1].split("\n");
+        const title = split[0].trim();
+        const content = params[1].replace(split[0], "").trim();
 
         const note = new Note(title, content);
 
@@ -64,7 +65,7 @@ class NoteInfo extends Command {
         const param = params[1].trim();
 
         const titlesSplit = param.split(",");
-        if (titlesSplit.length > 0) {
+        if (titlesSplit.length > 1) {
             const titles = titlesSplit.map(split => split.trim());
             const quotedTitles = titles.map(title => `"${title}"`);
 
@@ -100,29 +101,51 @@ class NoteInfo extends Command {
 }
 
 class NoteDelete extends Command {
-    regexp = /^\/delnote\s([^]+)/i;
-    title = "/delnote [title]";
-    description = "Delete note by it's title";
+    regexp = /^\/notedel\s([^]+)/i;
+    title = "/notedel [titles]";
+    description = "Delete notes by its titles";
     requirements = Requirements.Build(Requirement.BOT_ADMIN);
 
     async execute(context: MessageContext, params: string[]): Promise<void> {
         const title = params[1].trim();
 
-        CacheStorage.notes.deleteSingle(title).then(async (r) => {
-            if (r) {
-                await Api.sendMessage(context, `Заметка "${title}" успешно удалена.`);
-            } else {
-                await Api.sendMessage(context, "Заметка с таким названием не найдена.");
-            }
-        }).catch(async () => {
-            await Api.sendMessage(context, "Произошла ошибка при удалении заметки.");
-        });
+        const titlesSplit = params[1].split(",");
+        if (titlesSplit.length > 1) {
+            const titles = titlesSplit.map(split => split.trim());
+            const quotedTitles = titles.map(title => `"${title}"`);
+
+            CacheStorage.notes.delete(titles).then(async (deleted) => {
+                if (deleted) {
+                    const text = `Удалены следующие заметки: ${quotedTitles.join(", ")}.`;
+
+                    await Api.sendMessage(context, text);
+                } else {
+                    const text = `Произошла ошибка при удалении следующих заметок: ${quotedTitles.join(", ")}.`;
+
+                    await Api.sendMessage(context, text);
+                }
+            }).catch(async () => {
+                const text = `Произошла ошибка при удалении следующих заметок: ${quotedTitles.join(", ")}.`;
+
+                await Api.sendMessage(context, text);
+            });
+        } else {
+            CacheStorage.notes.deleteSingle(title).then(async (r) => {
+                if (r) {
+                    await Api.sendMessage(context, `Заметка "${title}" успешно удалена.`);
+                } else {
+                    await Api.sendMessage(context, "Заметка с таким названием не найдена.");
+                }
+            }).catch(async () => {
+                await Api.sendMessage(context, "Произошла ошибка при удалении заметки.");
+            });
+        }
     }
 }
 
 class NotesClear extends Command {
-    regexp = /^\/clearnotes$/i;
-    title = "/clearnotes";
+    regexp = /^\/notesclear$/i;
+    title = "/notesclear";
     description = "Clear all notes";
     requirements = Requirements.Build(Requirement.BOT_ADMIN);
 

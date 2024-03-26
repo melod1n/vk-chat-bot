@@ -2,6 +2,7 @@ import {Command} from "../model/chat-command";
 import {Utils} from "../util/utils";
 import {Api} from "../api/api";
 import {StorageManager} from "../database/storage-manager";
+import {MessageContext} from "vk-io";
 
 export let receivedMessagesCount = 0;
 export let sentMessagesCount = 0;
@@ -23,15 +24,16 @@ export class Stats extends Command {
     title = "/stats";
     description = "bot's stats";
 
-    async execute(context) {
+    async execute(context: MessageContext) {
         let text = "Статистика бота.\n\n";
 
         text += `⏳ Время работы: ${Utils.getUptime()}\n\n`;
-        text += `📩 Получено сообщений: ${receivedMessagesCount}\n`;
-        text += `📧 Отправлено сообщений: ${sentMessagesCount}\n\n`;
 
-        text += `✉ Всего получено сообщений: ${StorageManager.stats.receivedCount}\n`;
-        text += `✉ Всего отправлено сообщений: ${StorageManager.stats.sentCount}`;
+        text += `📥 Получено сообщений: ${receivedMessagesCount}\n`;
+        text += `📤 Отправлено сообщений: ${sentMessagesCount}\n\n`;
+
+        text += `📥 Получено сообщений (всего): ${StorageManager.stats.receivedCount}\n`;
+        text += `📤 Отправлено сообщений (всего): ${StorageManager.stats.sentCount}`;
 
         await Api.sendMessage(context, text);
     }
