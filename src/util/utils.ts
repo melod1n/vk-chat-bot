@@ -18,7 +18,7 @@ export class Utils {
         const processUptime = Math.ceil(process.uptime());
 
         const processDays = Math.floor(processUptime / (3600 * 24));
-        const processHours = Math.floor(processUptime / 3600);
+        const processHours = Math.floor((processUptime % (3600 * 24)) / 3600);
         const processMinutes = Math.floor((processUptime % 3600) / 60);
         const processSeconds = Math.floor(processUptime % 60);
 
@@ -30,7 +30,7 @@ export class Utils {
         const osUptime = Math.ceil(os.uptime());
 
         const osDays = Math.floor(osUptime / (3600 * 24));
-        const osHours = Math.floor(osUptime / 3600);
+        const osHours = Math.floor((osUptime % (3600 * 24)) / 3600);
         const osMinutes = Math.floor((osUptime % 3600) / 60);
         const osSeconds = Math.floor(osUptime % 60);
 
