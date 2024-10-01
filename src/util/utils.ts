@@ -1,5 +1,6 @@
 import * as child from "child_process";
-import {Command} from "../model/chat-command";
+import { Command } from "../model/chat-command";
+import os from "os";
 
 export class Utils {
 
@@ -14,44 +15,31 @@ export class Utils {
     }
 
     static getUptime(): string {
-        const processSeconds = Math.ceil(process.uptime());
+        const processUptime = Math.ceil(process.uptime());
 
-        let minutes = 0;
-        let hours = 0;
-        let days = 0;
+        const processDays = Math.floor(processUptime / (3600 * 24));
+        const processHours = Math.floor(processUptime / 3600);
+        const processMinutes = Math.floor((processUptime % 3600) / 60);
+        const processSeconds = Math.floor(processUptime % 60);
 
-        let i = 0;
-        let seconds = 0;
+        const processUptimeText = `${processDays > 0 ? `${processDays} д. ` : ""}` +
+            `${processHours > 0 ? `${processHours} ч. ` : ""}` +
+            `${processMinutes > 0 ? `${processMinutes} м. ` : ""}` +
+            `${processSeconds > 0 ? `${processSeconds} с.` : ""}`;
 
-        while (i < processSeconds) {
-            i++;
+        const osUptime = Math.ceil(os.uptime());
 
-            seconds++;
+        const osDays = Math.floor(osUptime / (3600 * 24));
+        const osHours = Math.floor(osUptime / 3600);
+        const osMinutes = Math.floor((osUptime % 3600) / 60);
+        const osSeconds = Math.floor(osUptime % 60);
 
-            if (seconds == 60) {
-                minutes++;
-                seconds = 0;
-            }
+        const osUptimeText = `${osDays > 0 ? `${osDays} д. ` : ""}` +
+            `${osHours > 0 ? `${osHours} ч. ` : ""}` +
+            `${osMinutes > 0 ? `${osMinutes} м. ` : ""}` +
+            `${osSeconds > 0 ? `${osSeconds} с.` : ""}`;
 
-            if (minutes == 60) {
-                hours++;
-                minutes = 0;
-            }
-
-            if (hours == 24) {
-                days++;
-                hours = 0;
-            }
-        }
-
-        let text = "";
-
-        if (days > 0) text += `${days} д. `;
-        if (hours > 0) text += `${hours} ч. `;
-        if (minutes > 0) text += `${minutes} м. `;
-        if (seconds > 0) text += `${seconds} с. `;
-
-        return text;
+        return `Docker контейнер:\n${processUptimeText}\n\nСистема:\n${osUptimeText}`;
     }
 
     static getRandomInt(max: number): number {
