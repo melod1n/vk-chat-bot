@@ -27,7 +27,7 @@ export class Stats extends Command {
     async execute(context: MessageContext) {
         let text = "Статистика бота.\n\n";
 
-        text += `⏳ Время работы: ${Utils.getUptime()}\n\n`;
+        text += `⏳ Время работы:\n${Utils.getUptime()}\n\n`;
 
         text += `📥 Получено сообщений: ${receivedMessagesCount}\n`;
         text += `📤 Отправлено сообщений: ${sentMessagesCount}\n\n`;
