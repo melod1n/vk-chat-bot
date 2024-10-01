@@ -39,7 +39,7 @@ export class Utils {
             `${osMinutes > 0 ? `${osMinutes} м. ` : ""}` +
             `${osSeconds > 0 ? `${osSeconds} с.` : ""}`;
 
-        return `Docker контейнер:\n${processUptimeText}\n\nСистема:\n${osUptimeText}`;
+        return `${process.env.IS_DOCKER == "true" ? "Docker контейнер" : "Процесс"}:\n${processUptimeText}\n\nСистема:\n${osUptimeText}`;
     }
 
     static getRandomInt(max: number): number {
