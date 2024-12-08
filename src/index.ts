@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types,no-async-promise-executor */
 import "reflect-metadata";
 import {ContextDefaultState, MessageContext, MessageForwardsCollection, VK} from "vk-io";
-import {requireNotNull, Utils} from "./util/utils";
+import {Utils} from "./util/utils";
 import {Command, Requirement, Requirements} from "./model/chat-command";
 import {StorageManager} from "./database/storage-manager";
 import {Api} from "./api/api";
@@ -36,36 +36,32 @@ import {DatabaseManager} from "./database/database-manager";
 import {Database} from "sqlite3";
 import * as fs from "fs";
 import {BOT_VERSION} from "./common/constants";
+import {Environment} from "./common/environment";
 
-const isDocker = process.env.IS_DOCKER == "true";
-console.log(`isDocker: ${isDocker}`);
+dotenv.config();
+Environment.load();
 
-export const configPath = isDocker ? "/config/data" : "data";
+console.log(`isDocker: ${Environment.IS_DOCKER}`);
+
+export const configPath = Environment.IS_DOCKER ? "/config/data" : "data";
 
 export const TAG = "[VKBot]";
 export const TAG_ERROR = `${TAG} [ERROR]`;
 
-dotenv.config();
-
 const findAndKickUnAllowedMembers = true;
 
-export const creatorId = Number(requireNotNull(process.env["CREATOR_ID"], "CREATOR_ID is required"));
 export let currentGroupId: number = -1;
-const mainChatId = Number(process.env["MAIN_CHAT_ID"]);
 
-const isDebug = process.env.DEBUG == "true";
-console.log(`isDebug: ${isDebug}`);
+console.log(`isDebug: ${Environment.IS_DEBUG}`);
 
-const predefinedApiVersion = process.env.API_VERSION;
-
-const tokenKey = isDebug ? "DEBUG_TOKEN" : "TOKEN";
+const predefinedApiVersion = Environment.PREDEFINED_API_VERSION;
 
 export const vk = new VK(
     predefinedApiVersion ? {
-        token: requireNotNull(process.env[tokenKey], `${tokenKey} is required`),
+        token: Environment.TOKEN,
         apiVersion: predefinedApiVersion
     } : {
-        token: requireNotNull(process.env[tokenKey], `${tokenKey} is required`)
+        token: Environment.TOKEN
     }
 );
 
@@ -99,7 +95,7 @@ globalThis.storage = StorageManager;
 vk.updates.on("message_new", async (context) => {
     incrementReceivedMessages();
 
-    if (process.env.LOG_NEW_MESSAGES == "true") {
+    if (Environment.LOG_NEW_MESSAGES) {
         console.log(context);
     }
 
@@ -110,13 +106,13 @@ vk.updates.on("message_new", async (context) => {
 
     const requirements = cmd.requirements;
 
-    if (requirements.isRequiresBotCreator() && context.senderId !== creatorId) {
+    if (requirements.isRequiresBotCreator() && context.senderId !== Environment.CREATOR_ID) {
         console.log(`${cmd.title}: creatorId is bad`);
         await context.reply("Вы не являетесь создателем бота.");
         return;
     }
 
-    if (requirements.isRequiresBotAdmin() && (!MemoryCache.includesAdmin(context.senderId) && context.senderId !== creatorId)) {
+    if (requirements.isRequiresBotAdmin() && (!MemoryCache.includesAdmin(context.senderId) && context.senderId !== Environment.CREATOR_ID)) {
         console.log(`${cmd.title}: adminId is bad`);
         await context.reply("Вы не являетесь администратором бота.");
         return;
@@ -167,18 +163,18 @@ vk.updates.on("message_new", async (context) => {
 });
 
 export async function checkUnAllowedMembers(): Promise<boolean> {
-    if (process.env.KICK_UNALLOWED_MEMBERS != "true") {
+    if (!Environment.KICK_UNALLOWED_MEMBERS) {
         return false;
     }
 
     if (!findAndKickUnAllowedMembers) return false;
 
-    if (!mainChatId) {
+    if (!Environment.MAIN_CHAT_ID) {
         console.error("No MAIN_CHAT_ID provided");
         return false;
     }
 
-    const chatMembers = await vk.api.messages.getConversationMembers({peer_id: 2000000000 + mainChatId});
+    const chatMembers = await vk.api.messages.getConversationMembers({peer_id: 2000000000 + Environment.MAIN_CHAT_ID});
     const chatMembersIds = chatMembers.items.map(m => m.member_id);
     const membersToKick = [];
 
@@ -192,7 +188,10 @@ export async function checkUnAllowedMembers(): Promise<boolean> {
 
     for (const memberId of membersToKick) {
         setTimeout(async () => {
-            await vk.api.messages.removeChatUser({chat_id: mainChatId, member_id: memberId}).catch(console.error);
+            await vk.api.messages.removeChatUser({
+                chat_id: Environment.MAIN_CHAT_ID,
+                member_id: memberId
+            }).catch(console.error);
         }, 500);
     }
 
@@ -320,7 +319,7 @@ async function sendKickUserMessage(context: MessageContext): Promise<unknown> {
 }
 
 async function setupDatabase() {
-    const dbFile = `${configPath}/${isDebug ? "database_debug.sqlite" : "database.sqlite"}`;
+    const dbFile = `${configPath}/${Environment.IS_DEBUG ? "database_debug.sqlite" : "database.sqlite"}`;
 
     if (!fs.existsSync(dbFile)) {
         fs.writeFileSync(dbFile, "");

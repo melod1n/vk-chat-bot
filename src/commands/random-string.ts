@@ -1,7 +1,7 @@
 import {Command} from "../model/chat-command";
 import {Utils} from "../util/utils";
-import {creatorId} from "../index";
 import {Api} from "../api/api";
+import {Environment} from "../common/environment";
 
 const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789";
 
@@ -14,7 +14,7 @@ export class RandomString extends Command {
     async execute(context, params) {
         const l = parseInt(params[1]);
 
-        const length = l > 100 && context.senderId != creatorId ? 100 : l;
+        const length = l > 100 && context.senderId != Environment.CREATOR_ID ? 100 : l;
 
         let result = `Randomized string [${length}]: `;
 

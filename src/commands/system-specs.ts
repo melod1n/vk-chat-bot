@@ -2,6 +2,7 @@ import {Command} from "../model/chat-command";
 import {Api} from "../api/api";
 import * as SystemInformation from "systeminformation";
 import {ContextDefaultState, MessageContext} from "vk-io";
+import {Environment} from "../common/environment";
 
 let specsText: string = null;
 
@@ -32,7 +33,7 @@ export class SystemSpecs extends Command {
 
         specsText = `NodeJS ${process.version}
                      OS: ${osInfo.distro}
-                     Docker: ${process.env.IS_DOCKER == "true"}
+                     Docker: ${Environment.IS_DOCKER}
                      CPU: ${cpuInfo.manufacturer} ${cpuInfo.brand} ${cpuInfo.physicalCores} (${cpuInfo.cores}) cores
                      RAM: ${totalRam} GB`;
 

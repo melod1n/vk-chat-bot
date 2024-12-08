@@ -1,6 +1,7 @@
 import * as child from "child_process";
-import { Command } from "../model/chat-command";
+import {Command} from "../model/chat-command";
 import os from "os";
+import {Environment} from "../common/environment";
 
 export class Utils {
 
@@ -39,7 +40,7 @@ export class Utils {
             `${osMinutes > 0 ? `${osMinutes} м. ` : ""}` +
             `${osSeconds > 0 ? `${osSeconds} с.` : ""}`;
 
-        return `${process.env.IS_DOCKER == "true" ? "Docker контейнер" : "Процесс"}:\n${processUptimeText}\n\nСистема:\n${osUptimeText}`;
+        return `${Environment.IS_DOCKER ? "Docker контейнер" : "Процесс"}:\n${processUptimeText}\n\nСистема:\n${osUptimeText}`;
     }
 
     static getRandomInt(max: number): number {
@@ -61,12 +62,12 @@ export class Utils {
     static compareCommands(command1: Command, command2: Command): number {
         return command1.title < command2.title ? -1 : command1.title > command2.title ? 1 : 0;
     }
-}
 
-export function requireNotNull<T>(object?: T, message?: string): T {
-    if (!object) {
-        throw Error(message ? message : "Required value is null");
-    } else {
-        return object;
+    static requireNotNull<T>(object?: T, message?: string): T {
+        if (!object) {
+            throw Error(message ? message : "Required value is null");
+        } else {
+            return object;
+        }
     }
 }
