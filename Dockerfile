@@ -18,8 +18,6 @@ ENV NODE_ENV production
 
 ENV IS_DOCKER true
 
-USER 1000
-
 # Create app directory
 WORKDIR /usr/src/app
 
